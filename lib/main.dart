@@ -5,15 +5,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'data/datasources/sqflite_database_service.dart';
 import 'data/repositories/auth_repository_impl.dart';
+import 'data/repositories/goal_repository_impl.dart';
+import 'data/repositories/transaction_repository_impl.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
 import 'presentation/auth/screens/login_screen.dart';
-import 'presentation/onboarding/screens/onboarding_screen.dart';
-import 'data/repositories/transaction_repository_impl.dart';
+import 'presentation/goals/bloc/goal_bloc.dart';
 import 'presentation/home/bloc/transaction_bloc.dart';
+import 'presentation/insights/bloc/insights_bloc.dart';
+import 'presentation/onboarding/screens/onboarding_screen.dart';
 import 'presentation/theme/theme_cubit.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Notifications
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.scheduleDailyTenPMNotification();
 
   // Pre-initialize standard connection to Sqflite
   await SqfliteDatabaseService.database;
@@ -30,6 +39,10 @@ class FinovaApp extends StatelessWidget {
       providers: [
         RepositoryProvider(create: (context) => AuthRepositoryImpl()),
         RepositoryProvider(create: (context) => TransactionRepositoryImpl()),
+        RepositoryProvider(
+          create: (context) async =>
+              GoalRepositoryImpl(db: await SqfliteDatabaseService.database),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -43,6 +56,13 @@ class FinovaApp extends StatelessWidget {
                 TransactionBloc(context.read<TransactionRepositoryImpl>())
                   ..add(TransactionFetchRequested()),
           ),
+          BlocProvider(
+            create: (context) => GoalBloc(context.read<GoalRepositoryImpl>()),
+          ),
+          BlocProvider(
+            create: (context) =>
+                InsightsBloc(context.read<TransactionRepositoryImpl>()),
+          ),
           BlocProvider(create: (context) => ThemeCubit()),
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(
@@ -55,7 +75,8 @@ class FinovaApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               home: BlocBuilder<AuthBloc, AuthState>(
                 buildWhen: (previous, current) {
-                  return current is AuthAuthenticated || current is AuthUnauthenticated;
+                  return current is AuthAuthenticated ||
+                      current is AuthUnauthenticated;
                 },
                 builder: (context, state) {
                   if (state is AuthAuthenticated) {

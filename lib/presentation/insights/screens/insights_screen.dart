@@ -1,198 +1,374 @@
+import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:finova/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../notifications/screens/notifications_screen.dart';
+import '../../profile/screens/profile_screen.dart';
+import '../bloc/insights_bloc.dart';
 
-class InsightsScreen extends StatelessWidget {
+class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
+
+  @override
+  State<InsightsScreen> createState() => _InsightsScreenState();
+}
+
+class _InsightsScreenState extends State<InsightsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    context.read<InsightsBloc>().add(
+      InsightsFetchRequested(month: now.month, year: now.year),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      body: CustomScrollView(
-        slivers: [
-          // Sticky App Bar
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: colorScheme.background.withOpacity(0.8),
-            elevation: 0,
-            toolbarHeight: 64,
-            title: Text(
-              'Finance Insights',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            flexibleSpace: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-          ),
+    final isDark = colorScheme.brightness == Brightness.dark;
+    final currentMonthStr = DateFormat('MMMM').format(DateTime.now());
 
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Monthly Summary Card
-                _buildMonthlySummaryCard(context),
-                const SizedBox(height: 32),
-
-                // Health Score Card
-                _buildHealthScoreCard(context),
-                const SizedBox(height: 32),
-
-                Text(
-                  'Top Categories',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: colorScheme.onSurface,
-                  ),
+    return BlocBuilder<InsightsBloc, InsightsState>(
+      builder: (context, state) {
+        return CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              backgroundColor: colorScheme.background.withOpacity(0.8),
+              elevation: 0,
+              toolbarHeight: 72,
+              flexibleSpace: ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(color: Colors.transparent),
                 ),
-                const SizedBox(height: 24),
-
-                // Horizontal Category List
-                SizedBox(
-                  height: 180,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    clipBehavior: Clip.none,
+              ),
+              title: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  final user = (authState is AuthAuthenticated)
+                      ? authState.user
+                      : null;
+                  return Row(
                     children: [
-                      _buildCategoryCard(
-                        context,
-                        category: 'Dining Out',
-                        amount: '₹12,450',
-                        percentage: 24.5,
-                        icon: Icons.restaurant_rounded,
-                        color: colorScheme.primary,
-                        isIncreasing: true,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorScheme.surfaceContainerHighest,
+                          ),
+                          child: ClipOval(
+                            child:
+                                user?.profileImagePath != null &&
+                                    user!.profileImagePath!.isNotEmpty
+                                ? Image.file(
+                                    File(user.profileImagePath!),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.person,
+                                      color: colorScheme.outline,
+                                    ),
+                                  )
+                                : Image.network(
+                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuArMfGM7cUNMmy0YHaP3-2aKk72tMn3fSdjYLwdLQC5yeV8xFYCTie5QBYUck9q84r1Z7qMdIq4DDIKSOZib4SKcTXO6ugNv62Bfxa4jcdz4wljYWB4KTovSPyBepLxxWiHjM2POtuNqIjeGW3RCjbM_YPpXKcXqd_zMV8kOyNOeA7pE620TN0SbRS8bLLA7nrc3FYtIkvZ9Wmq_AXZC_hMCVvJ7wbo4cwMJWyEJATXUrQoxZZeAN5EFWGwpm-OLykDk6pnyQzKtTc',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.person,
+                                      color: colorScheme.outline,
+                                    ),
+                                  ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 16),
-                      _buildCategoryCard(
-                        context,
-                        category: 'Shopping',
-                        amount: '₹8,200',
-                        percentage: 16.2,
-                        icon: Icons.shopping_bag_rounded,
-                        color: colorScheme.secondary,
-                        isIncreasing: false,
-                      ),
-                      const SizedBox(width: 16),
-                      _buildCategoryCard(
-                        context,
-                        category: 'Travel',
-                        amount: '₹5,100',
-                        percentage: 10.1,
-                        icon: Icons.flight_rounded,
-                        color: colorScheme.tertiary,
-                        isIncreasing: false,
+                      const SizedBox(width: 12),
+                      Text(
+                        'Finova',
+                        style: GoogleFonts.manrope(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: colorScheme.primary,
+                        ),
                       ),
                     ],
+                  );
+                },
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.notifications_rounded,
+                      color: colorScheme.outline,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+                    },
+                    splashRadius: 24,
                   ),
                 ),
-                const SizedBox(height: 32),
-
-                // Savings Tips
-                _buildSavingsTipCard(context),
-                const SizedBox(height: 48),
-              ]),
+              ],
             ),
-          ),
-        ],
-      ),
+            SliverPadding(
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 16,
+                bottom: 120,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // Month Selector (Swipeable)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _buildMonthTab(currentMonthStr, true, colorScheme),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Hero: Month Summary
+                  Text(
+                    '$currentMonthStr Insights',
+                    style: GoogleFonts.manrope(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (state is InsightsLoaded)
+                    Text(
+                      state.totalSpent > 0
+                          ? 'Your spending looks steady this month.'
+                          : 'No expenses logged yet. Add some to see insights!',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  if (state is InsightsLoading || state is InsightsInitial)
+                    Text(
+                      'Analyzing your spending...',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  const SizedBox(height: 40),
+
+                  if (state is InsightsLoaded) ...[
+                    // Bento Grid Layout
+                    // Biggest Expense
+                    _buildBiggestExpenseCard(state, colorScheme, isDark),
+                    const SizedBox(height: 16),
+
+                    // Spending Heatmap
+                    _buildSpendingHeatmapCard(state, colorScheme, isDark),
+                    const SizedBox(height: 16),
+
+                    // 2-column row: Weekly Avg & Smart Insight
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildWeeklyAvgCard(
+                            state,
+                            colorScheme,
+                            isDark,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildSmartInsightCard(state, colorScheme),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ] else if (state is InsightsLoading ||
+                      state is InsightsInitial) ...[
+                    const Center(child: CircularProgressIndicator()),
+                  ] else if (state is InsightsError) ...[
+                    Center(child: Text('Error: \${state.message}')),
+                  ],
+
+                  // Focus Card (Static for Visual Impact)
+                  _buildFocusCard(colorScheme, isDark),
+                ]),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildMonthlySummaryCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildMonthTab(String text, bool isActive, ColorScheme colorScheme) {
+    if (isActive) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withOpacity(0.2),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.onSurface.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.primary,
+          ),
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildBiggestExpenseCard(
+    InsightsLoaded state,
+    ColorScheme colorScheme,
+    bool isDark,
+  ) {
+    final formatCurrency = NumberFormat.simpleCurrency();
+    final biggestAmount = state.categoryTotals[state.biggestCategory] ?? 0.0;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: colorScheme.primary.withOpacity(0.1)),
+        color: isDark
+            ? AppColors.darkSurfaceContainerLowest
+            : AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF191C1D).withOpacity(0.06),
+            offset: const Offset(0, 10),
+            blurRadius: 40,
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'BIGGEST EXPENSE',
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            state.biggestCategory != 'None'
+                ? state.biggestCategory.toUpperCase()
+                : 'NO EXPENSES YET',
+            style: GoogleFonts.manrope(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Monthly Spend',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
+                    formatCurrency.format(biggestAmount),
+                    style: GoogleFonts.manrope(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                      color: colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '₹52,400',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
+                  if (biggestAmount > 0)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.insights_rounded,
+                          size: 16,
+                          color: colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Most active category',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.secondary,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.trending_up, color: colorScheme.error, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '12%',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: colorScheme.error,
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  Icons.receipt_long_rounded,
+                  color: colorScheme.primary,
+                  size: 32,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildSimpleStat('Prev. Month', '₹46,200', colorScheme),
-              Container(
-                width: 1,
-                height: 32,
-                color: colorScheme.outlineVariant.withOpacity(0.3),
-              ),
-              _buildSimpleStat('Budget Left', '₹7,600', colorScheme),
-              Container(
-                width: 1,
-                height: 32,
-                color: colorScheme.outlineVariant.withOpacity(0.3),
-              ),
-              _buildSimpleStat('Savings', '₹12,000', colorScheme),
             ],
           ),
         ],
@@ -200,128 +376,132 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleStat(String label, String value, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 12,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildSpendingHeatmapCard(
+    InsightsLoaded state,
+    ColorScheme colorScheme,
+    bool isDark,
+  ) {
+    // Determine the max amount among all categories to set 100% height scale.
+    double maxAmt = 0;
+    if (state.categoryTotals.isNotEmpty) {
+      maxAmt = state.categoryTotals.values.reduce(max);
+    }
 
-  Widget _buildHealthScoreCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    // Convert to list for mapping
+    final categories = state.categoryTotals.entries
+        .where((e) => e.value > 0)
+        .toList();
+    // Sort descending by value so biggest bars are shown
+    categories.sort((a, b) => b.value.compareTo(a.value));
+
+    // Take top 5 for the view
+    final topCategories = categories.take(5).toList();
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.brightness == Brightness.light
-            ? AppColors.surfaceContainerLowest
-            : AppColors.darkSurfaceContainerLowest,
-        borderRadius: BorderRadius.circular(32),
+        color: isDark
+            ? AppColors.darkSurfaceContainerLowest
+            : AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.brightness == Brightness.light
-                ? const Color(0x0A191C1D)
-                : Colors.black26,
-            blurRadius: 40,
+            color: const Color(0xFF191C1D).withOpacity(0.06),
             offset: const Offset(0, 10),
+            blurRadius: 40,
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            alignment: Alignment.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: CircularProgressIndicator(
-                  value: 0.78,
-                  strokeWidth: 10,
-                  backgroundColor: colorScheme.surfaceVariant,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    colorScheme.primary,
-                  ),
-                  strokeCap: StrokeCap.round,
+              Text(
+                'Spending Heatmap',
+                style: GoogleFonts.manrope(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.onSurface,
                 ),
               ),
-              const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '780',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'Solid',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+              Icon(
+                Icons.more_horiz_rounded,
+                color: colorScheme.onSurfaceVariant,
               ),
             ],
           ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Financial Health',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 200,
+            child: topCategories.isEmpty
+                ? Center(
+                    child: Text(
+                      'Not enough data to map.',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: topCategories.map((entry) {
+                      final pct = maxAmt == 0 ? 0.0 : entry.value / maxAmt;
+                      return _buildHeatmapBar(
+                        entry.key.toUpperCase(),
+                        pct,
+                        colorScheme.primary,
+                        colorScheme,
+                      );
+                    }).toList(),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your health score improved by 20 points since last month!',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'View recommendation →',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeatmapBar(
+    String label,
+    double percentage,
+    Color fill,
+    ColorScheme colorScheme,
+  ) {
+    // consistently allows a 160px maximum bar.
+    final maxHeight = 160.0;
+
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Container(
+            width: double.infinity,
+            height: maxHeight,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.infinity,
+              height: maxHeight * percentage,
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label.length > 6 ? label.substring(0, 6) : label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -329,135 +509,237 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard(
-    BuildContext context, {
-    required String category,
-    required String amount,
-    required double percentage,
-    required IconData icon,
-    required Color color,
-    required bool isIncreasing,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildWeeklyAvgCard(
+    InsightsLoaded state,
+    ColorScheme colorScheme,
+    bool isDark,
+  ) {
+    final formatCurrency = NumberFormat.simpleCurrency();
+
     return Container(
-      width: 160,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.brightness == Brightness.light
-            ? AppColors.surfaceContainerLowest
-            : AppColors.darkSurfaceContainerLowest,
+        color: isDark
+            ? AppColors.darkSurfaceContainerLowest
+            : AppColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF191C1D).withOpacity(0.06),
+            offset: const Offset(0, 10),
+            blurRadius: 40,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Text(
+            'WEEKLY AVG',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.0,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
+              Text(
+                formatCurrency.format(state.weeklyAvg),
+                style: GoogleFonts.manrope(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.onSurface,
                 ),
-                child: Icon(icon, color: color, size: 20),
               ),
-              Icon(
-                isIncreasing ? Icons.trending_up : Icons.trending_down,
-                color: isIncreasing ? colorScheme.error : colorScheme.secondary,
-                size: 18,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 4,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Container(
+                    width: 4,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'steady spending',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.secondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmartInsightCard(InsightsLoaded state, ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF191C1D).withOpacity(0.06),
+            offset: const Offset(0, 10),
+            blurRadius: 40,
+          ),
+        ],
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            right: -10,
+            top: -10,
+            child: Icon(
+              Icons.lightbulb_rounded,
+              size: 72,
+              color: colorScheme.onPrimary.withOpacity(0.1),
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                category,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+                'SMART TIP',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
+                  color: colorScheme.onPrimary.withOpacity(0.8),
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 8),
               Text(
-                '$percentage% of spend',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 11,
-                  color: colorScheme.onSurfaceVariant,
+                state.biggestCategory != 'None' && state.totalSpent > 0
+                    ? 'Consider setting a budget limit specifically for \${state.biggestCategory}.'
+                    : 'Start logging expenses to get personalized tips!',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  height: 1.5,
+                  color: colorScheme.onPrimary,
                 ),
               ),
             ],
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSavingsTipCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildFocusCard(ColorScheme colorScheme, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            colorScheme.secondary,
-            colorScheme.secondary.withOpacity(0.7),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: colorScheme.surfaceVariant.withOpacity(0.5),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
         children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.onSurface.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.savings_rounded,
+              color: colorScheme.primary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Expert Tip',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white70,
+                Text(
+                  'Emergency Fund Progress',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Reducing dining out by just ₹1,000 this month could fund your Bali trip 2 weeks earlier!',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
+                Container(
+                  height: 6,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.82,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 16),
-          const Icon(
-            Icons.lightbulb_outline_rounded,
-            color: Colors.white,
-            size: 40,
+          Text(
+            '82%',
+            style: GoogleFonts.manrope(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: colorScheme.onSurface,
+            ),
           ),
         ],
       ),

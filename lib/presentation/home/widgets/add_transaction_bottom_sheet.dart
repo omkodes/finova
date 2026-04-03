@@ -504,7 +504,8 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                       if (amt > 0) {
                         if (widget.transaction != null) {
                           // Edit Mode
-                          final updatedTx = widget.transaction!.copyWith(
+                          final updatedTx = TransactionEntity(
+                            id: widget.transaction!.id,
                             amount: amt,
                             type: _isExpense
                                 ? DomainTransactionType.expense
@@ -514,6 +515,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                             notes: _notesController.text.trim().isNotEmpty
                                 ? _notesController.text.trim()
                                 : null,
+                            createdAt: widget.transaction!.createdAt,
                           );
                           context.read<TransactionBloc>().add(
                             TransactionUpdateRequested(updatedTx),

@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../widgets/edit_profile_bottom_sheet.dart';
 
+import '../../auth/bloc/auth_bloc.dart';
 import '../../theme/theme_cubit.dart';
+import '../widgets/edit_profile_bottom_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,7 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is! AuthAuthenticated) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final user = state.user;
@@ -72,7 +74,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                            user.name.isNotEmpty
+                                ? user.name[0].toUpperCase()
+                                : 'U',
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 12,
@@ -85,9 +89,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
 
-
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         // User Identity Section
@@ -134,16 +140,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             child: ClipOval(
-              child: user.profileImagePath != null && user.profileImagePath!.isNotEmpty
+              child:
+                  user.profileImagePath != null &&
+                      user.profileImagePath!.isNotEmpty
                   ? Image.file(
                       File(user.profileImagePath!),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(Icons.person, size: 48, color: colorScheme.outline),
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.person,
+                        size: 48,
+                        color: colorScheme.outline,
+                      ),
                     )
                   : Image.network(
                       'https://lh3.googleusercontent.com/aida-public/AB6AXuArMfGM7cUNMmy0YHaP3-2aKk72tMn3fSdjYLwdLQC5yeV8xFYCTie5QBYUck9q84r1Z7qMdIq4DDIKSOZib4SKcTXO6ugNv62Bfxa4jcdz4wljYWB4KTovSPyBepLxxWiHjM2POtuNqIjeGW3RCjbM_YPpXKcXqd_zMV8kOyNOeA7pE620TN0SbRS8bLLA7nrc3FYtIkvZ9Wmq_AXZC_hMCVvJ7wbo4cwMJWyEJATXUrQoxZZeAN5EFWGwpm-OLykDk6pnyQzKtTc',
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(Icons.person, size: 48, color: colorScheme.outline),
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.person,
+                        size: 48,
+                        color: colorScheme.outline,
+                      ),
                     ),
             ),
           ),
@@ -189,40 +205,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(
           children: [
             Expanded(
-                child: _buildBentoSection(
-              title: 'Account Settings',
-              icon: Icons.account_circle_rounded,
-              children: [
-                _buildSettingsTile(
-                  'Edit Profile',
-                  hasChevron: true,
-                  onTap: () => _openEditProfile(context, user),
-                ),
-              ],
-            )),
+              child: _buildBentoSection(
+                title: 'Account Settings',
+                icon: Icons.account_circle_rounded,
+                children: [
+                  _buildSettingsTile(
+                    'Edit Profile',
+                    hasChevron: true,
+                    onTap: () => _openEditProfile(context, user),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 24),
         Row(
           children: [
             Expanded(
-                child: _buildBentoSection(
-              title: 'Preferences',
-              icon: Icons.settings_suggest_rounded,
-              children: [
-                BlocBuilder<ThemeCubit, ThemeMode>(
-                  builder: (context, mode) {
-                    return _buildSwitchTile(
-                      'Dark Mode',
-                      mode == ThemeMode.dark,
-                      (val) => context.read<ThemeCubit>().toggleTheme(val),
-                    );
-                  },
-                ),
-                _buildSettingsTile('Currency', value: 'INR (₹)'),
-                _buildSettingsTile('Language', value: 'English'),
-              ],
-            )),
+              child: _buildBentoSection(
+                title: 'Preferences',
+                icon: Icons.settings_suggest_rounded,
+                children: [
+                  BlocBuilder<ThemeCubit, ThemeMode>(
+                    builder: (context, mode) {
+                      return _buildSwitchTile(
+                        'Dark Mode',
+                        mode == ThemeMode.dark,
+                        (val) => context.read<ThemeCubit>().toggleTheme(val),
+                      );
+                    },
+                  ),
+                  _buildSettingsTile('Currency', value: 'INR (₹)'),
+                  _buildSettingsTile('Language', value: 'English'),
+                ],
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -234,7 +252,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: 'Security',
                 icon: Icons.verified_user_rounded,
                 children: [
-                  _buildSwitchTile('Biometric Login', _biometricLogin, (val) => setState(() => _biometricLogin = val)),
+                  _buildSwitchTile(
+                    'Biometric Login',
+                    _biometricLogin,
+                    (val) => setState(() => _biometricLogin = val),
+                  ),
                 ],
               ),
             ),
@@ -244,7 +266,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildBentoSection({required String title, required IconData icon, required List<Widget> children}) {
+  Widget _buildBentoSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
@@ -253,7 +279,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.brightness == Brightness.light ? const Color(0x08191C1D) : Colors.black26,
+            color: colorScheme.brightness == Brightness.light
+                ? const Color(0x08191C1D)
+                : Colors.black26,
             blurRadius: 40,
             offset: const Offset(0, 10),
           ),
@@ -284,7 +312,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsTile(String title, {String? value, bool hasChevron = false, bool hasExternal = false, VoidCallback? onTap}) {
+  Widget _buildSettingsTile(
+    String title, {
+    String? value,
+    bool hasChevron = false,
+    bool hasExternal = false,
+    VoidCallback? onTap,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -315,8 +349,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-              if (hasChevron) Icon(Icons.chevron_right_rounded, size: 20, color: colorScheme.outline),
-              if (hasExternal) Icon(Icons.open_in_new_rounded, size: 18, color: colorScheme.outline),
+              if (hasChevron)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: colorScheme.outline,
+                ),
+              if (hasExternal)
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 18,
+                  color: colorScheme.outline,
+                ),
             ],
           ),
         ),

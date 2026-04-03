@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:finova/core/theme/app_colors.dart';
+import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../domain/entities/transaction_entity.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../home/bloc/transaction_bloc.dart';
 import '../../notifications/screens/notifications_screen.dart';
@@ -104,12 +104,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Activity',
+                      'Finova',
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
-                        color: colorScheme.onSurface,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
@@ -231,7 +231,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: colorScheme.brightness == Brightness.light ? const Color(0x0A191C1D) : Colors.black26,
+                color: colorScheme.brightness == Brightness.light
+                    ? const Color(0x0A191C1D)
+                    : Colors.black26,
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -517,7 +519,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.brightness == Brightness.light ? const Color(0x0F191C1D) : Colors.black26,
+              color: colorScheme.brightness == Brightness.light
+                  ? const Color(0x0F191C1D)
+                  : Colors.black26,
               blurRadius: 40,
               offset: const Offset(0, 10),
             ),

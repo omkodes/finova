@@ -14,7 +14,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       emit(TransactionLoading());
       try {
         await repository.addTransaction(event.transaction);
-        emit(TransactionOperationSuccess());
+        add(TransactionFetchRequested());
       } catch (e) {
         emit(TransactionError(e.toString()));
       }
@@ -34,7 +34,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       emit(TransactionLoading());
       try {
         await repository.updateTransaction(event.transaction);
-        emit(TransactionOperationSuccess());
+        add(TransactionFetchRequested());
       } catch (e) {
         emit(TransactionError(e.toString()));
       }
@@ -44,7 +44,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       emit(TransactionLoading());
       try {
         await repository.deleteTransaction(event.id);
-        emit(TransactionOperationSuccess());
+        add(TransactionFetchRequested());
       } catch (e) {
         emit(TransactionError(e.toString()));
       }
