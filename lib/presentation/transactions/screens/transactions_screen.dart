@@ -11,6 +11,8 @@ import '../../auth/bloc/auth_bloc.dart';
 import '../../home/bloc/transaction_bloc.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../../services/export_service.dart';
+import '../../../services/notification_service.dart';
 import '../widgets/transaction_details_bottom_sheet.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class TransactionsScreen extends StatefulWidget {
 class _TransactionsScreenState extends State<TransactionsScreen> {
   String _selectedFilter = 'All';
   String? _selectedCategory;
+  String _searchQuery = '';
 
   final List<String> _categories = [
     'All',
@@ -123,13 +126,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   color: colorScheme.outline,
                 ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Transaction history exported!'),
-                      backgroundColor: colorScheme.primary,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  _showExportConfirmationDialog();
                 },
                 splashRadius: 24,
               ),
@@ -240,6 +237,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ],
           ),
           child: TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
             decoration: InputDecoration(
               hintText: 'Search transactions',
               hintStyle: TextStyle(
@@ -403,6 +405,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     }
 
     var filtered = allTx;
+
+    if (_searchQuery.trim().isNotEmpty) {
+      final query = _searchQuery.trim().toLowerCase();
+      filtered = filtered.where((t) {
+        final matchesCategory = t.category.toLowerCase().contains(query);
+        final matchesNotes = t.notes?.toLowerCase().contains(query) ?? false;
+        return matchesCategory || matchesNotes;
+      }).toList();
+    }
+
     if (_selectedFilter == 'Income') {
       filtered = filtered
           .where((t) => t.type == DomainTransactionType.income)
@@ -588,5 +600,84 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         ),
       ),
     );
+  }
+
+  void _showExportConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Export Data'),
+          content: const Text('Do you want to download all data in Excel format?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _performExport();
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _performExport() async {
+    // Show Progress Dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Exporting data...'),
+            ],
+          ),
+        );
+      },
+    );
+
+    final exportService = ExportService();
+    bool success = await exportService.exportDataToExcel();
+
+    // Close Progress Dialog
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+
+    if (success) {
+      // Show Notification
+      await NotificationService().showFileSavedNotification();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Data successfully exported!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to export data.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }

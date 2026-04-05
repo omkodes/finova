@@ -477,7 +477,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              setState(() {
+                                _currentIndex = 1;
+                              });
+                            },
                             child: Text(
                               'View All',
                               style: TextStyle(
@@ -708,6 +712,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.onSurfaceVariant,
                               ),
+                            ),
+                            BlocBuilder<AuthBloc, AuthState>(
+                              builder: (context, state) {
+                                final user = (state is AuthAuthenticated) ? state.user : null;
+                                final budget = user?.monthlyBudget ?? 0.0;
+                                if (budget <= 0) return const SizedBox.shrink();
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'of ${formatCurrency.format(budget)}',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: colorScheme.outline,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

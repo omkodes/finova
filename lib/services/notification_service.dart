@@ -63,7 +63,8 @@ class NotificationService {
           android: AndroidNotificationDetails(
             'daily_expense_reminder',
             'Daily Expense Reminder',
-            channelDescription: 'Reminds you at 10 PM daily to log your expenses',
+            channelDescription:
+                'Reminds you at 10 PM daily to log your expenses',
             importance: Importance.max,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
@@ -91,5 +92,27 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
     return scheduledDate;
+  }
+
+  Future<void> showFileSavedNotification() async {
+    try {
+      await flutterLocalNotificationsPlugin.show(
+        id: 1,
+        title: 'Export Complete',
+        body: 'Your Finova data has been successfully exported and shared.',
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'export_alerts',
+            'Data Export Alerts',
+            channelDescription: 'Notifications for data exports',
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Failed to show file saved notification: $e');
+    }
   }
 }

@@ -23,6 +23,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _budgetController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      _nameController.text = authState.user.name ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
