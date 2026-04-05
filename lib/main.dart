@@ -10,6 +10,7 @@ import 'data/repositories/goal_repository_impl.dart';
 import 'data/repositories/transaction_repository_impl.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
 import 'presentation/auth/screens/login_screen.dart';
+import 'presentation/auth/widgets/biometric_wrapper.dart' as finova_auth;
 import 'presentation/goals/bloc/challenge_bloc.dart';
 import 'presentation/goals/bloc/goal_bloc.dart';
 import 'presentation/home/bloc/transaction_bloc.dart';
@@ -114,6 +115,18 @@ class FinovaApp extends StatelessWidget {
               darkTheme: AppTheme.darkTheme,
               themeMode: themeMode,
               debugShowCheckedModeBanner: false,
+              builder: (context, child) {
+                // Clamp text scaling to prevent UI layout issues with large system display settings
+                final mediaQueryData = MediaQuery.of(context);
+                final textScaler = mediaQueryData.textScaler.clamp(
+                  minScaleFactor: 0.8,
+                  maxScaleFactor: 1.0,
+                );
+                return MediaQuery(
+                  data: mediaQueryData.copyWith(textScaler: textScaler),
+                  child: child!,
+                );
+              },
               home: BlocBuilder<AuthBloc, AuthState>(
                 buildWhen: (previous, current) {
                   return current is AuthAuthenticated ||
@@ -124,7 +137,7 @@ class FinovaApp extends StatelessWidget {
                     if (!state.user.hasCompletedOnboarding) {
                       return const OnboardingScreen();
                     }
-                    return const HomeScreen();
+                    return const finova_auth.BiometricWrapper(child: HomeScreen());
                   }
                   return const LoginScreen();
                 },

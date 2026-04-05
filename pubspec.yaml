@@ -49,6 +49,7 @@ dependencies:
   timezone: ^0.11.0
   excel: any
   share_plus: any
+  local_auth: ^3.0.1
 
 dev_dependencies:
   flutter_test:

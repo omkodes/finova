@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../auth/bloc/auth_bloc.dart';
 import '../../theme/theme_cubit.dart';
+import '../../../services/biometric_service.dart';
 import '../widgets/edit_profile_bottom_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,7 +17,46 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _biometricLogin = true;
+  bool _biometricLogin = false;
+  bool _hasBiometricCapability = false;
+  final BiometricService _biometricService = BiometricService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricSettings();
+  }
+
+  Future<void> _loadBiometricSettings() async {
+    final isAvailable = await _biometricService.isBiometricAvailable();
+    if (isAvailable) {
+      final isEnabled = await _biometricService.isBiometricEnabled();
+      if (mounted) {
+        setState(() {
+          _hasBiometricCapability = true;
+          _biometricLogin = isEnabled;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleBiometric(bool value) async {
+    if (value) {
+      final success = await _biometricService.authenticate(
+        reason: 'Authenticate to enable biometric login',
+      );
+      if (!success) {
+        return;
+      }
+    }
+    
+    await _biometricService.setBiometricEnabled(value);
+    if (mounted) {
+      setState(() {
+        _biometricLogin = value;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -252,11 +292,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: 'Security',
                 icon: Icons.verified_user_rounded,
                 children: [
-                  _buildSwitchTile(
-                    'Biometric Login',
-                    _biometricLogin,
-                    (val) => setState(() => _biometricLogin = val),
-                  ),
+                  if (_hasBiometricCapability)
+                    _buildSwitchTile(
+                      'Biometric Login',
+                      _biometricLogin,
+                      _toggleBiometric,
+                    )
+                  else
+                    _buildSettingsTile(
+                      'Biometric Login',
+                      value: 'Not Available',
+                    ),
                 ],
               ),
             ),

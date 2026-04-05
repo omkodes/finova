@@ -462,10 +462,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   color: colorScheme.onSurface,
                 ),
               ),
-              Icon(
-                Icons.more_horiz_rounded,
-                color: colorScheme.onSurfaceVariant,
-              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -688,7 +684,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               const SizedBox(height: 8),
               Text(
                 state.biggestCategory != 'None' && state.totalSpent > 0
-                    ? 'Consider setting a budget limit specifically for \${state.biggestCategory}.'
+                    ? 'Consider setting a budget limit specifically for ${state.biggestCategory}.'
                     : 'Start logging expenses to get personalized tips!',
                 style: GoogleFonts.inter(
                   fontSize: 12,
