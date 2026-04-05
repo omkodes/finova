@@ -1,14 +1,12 @@
 import 'package:sqflite/sqflite.dart';
 import '../../domain/entities/goal_entity.dart';
 import '../../domain/repositories/goal_repository.dart';
+import '../datasources/sqflite_database_service.dart';
 
 class GoalRepositoryImpl implements GoalRepository {
-  final Database db;
-
-  GoalRepositoryImpl({required this.db});
-
   @override
   Future<void> addGoal(GoalEntity goal) async {
+    final db = await SqfliteDatabaseService.database;
     await db.insert(
       'goals',
       goal.toMap(),
@@ -18,6 +16,7 @@ class GoalRepositoryImpl implements GoalRepository {
 
   @override
   Future<void> updateGoal(GoalEntity goal) async {
+    final db = await SqfliteDatabaseService.database;
     await db.update(
       'goals',
       goal.toMap(),
@@ -28,6 +27,7 @@ class GoalRepositoryImpl implements GoalRepository {
 
   @override
   Future<void> deleteGoal(int id) async {
+    final db = await SqfliteDatabaseService.database;
     await db.delete(
       'goals',
       where: 'id = ?',
@@ -37,6 +37,7 @@ class GoalRepositoryImpl implements GoalRepository {
 
   @override
   Future<List<GoalEntity>> getGoalsByMonth(int month, int year) async {
+    final db = await SqfliteDatabaseService.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'goals',
       where: 'month = ? AND year = ?',
@@ -51,6 +52,7 @@ class GoalRepositoryImpl implements GoalRepository {
 
   @override
   Future<List<GoalEntity>> getAllGoals() async {
+    final db = await SqfliteDatabaseService.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'goals',
       orderBy: 'createdAt DESC',

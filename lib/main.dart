@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'data/datasources/sqflite_database_service.dart';
 import 'data/repositories/auth_repository_impl.dart';
+import 'data/repositories/challenge_repository_impl.dart';
 import 'data/repositories/goal_repository_impl.dart';
 import 'data/repositories/transaction_repository_impl.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
 import 'presentation/auth/screens/login_screen.dart';
+import 'presentation/goals/bloc/challenge_bloc.dart';
 import 'presentation/goals/bloc/goal_bloc.dart';
 import 'presentation/home/bloc/transaction_bloc.dart';
 import 'presentation/insights/bloc/insights_bloc.dart';
@@ -39,10 +41,8 @@ class FinovaApp extends StatelessWidget {
       providers: [
         RepositoryProvider(create: (context) => AuthRepositoryImpl()),
         RepositoryProvider(create: (context) => TransactionRepositoryImpl()),
-        RepositoryProvider(
-          create: (context) async =>
-              GoalRepositoryImpl(db: await SqfliteDatabaseService.database),
-        ),
+        RepositoryProvider(create: (context) => GoalRepositoryImpl()),
+        RepositoryProvider(create: (context) => ChallengeRepositoryImpl()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -58,6 +58,12 @@ class FinovaApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => GoalBloc(context.read<GoalRepositoryImpl>()),
+          ),
+          BlocProvider(
+            create: (context) => ChallengeBloc(
+              challengeRepository: context.read<ChallengeRepositoryImpl>(),
+              transactionRepository: context.read<TransactionRepositoryImpl>(),
+            )..add(ChallengeFetchRequested()),
           ),
           BlocProvider(
             create: (context) =>

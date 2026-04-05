@@ -1,8 +1,10 @@
+import 'package:finova/core/theme/app_colors.dart';
+import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../domain/entities/transaction_entity.dart';
+import '../../goals/bloc/goal_bloc.dart';
+import '../../insights/bloc/insights_bloc.dart';
 import '../bloc/transaction_bloc.dart';
 
 void showAddTransactionBottomSheet(
@@ -539,6 +541,19 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                             TransactionAddRequested(newTx),
                           );
                         }
+
+                        // Trigger re-fetch for Insights and Goals dynamically so they update without app restart
+                        final now = DateTime.now();
+                        context.read<InsightsBloc>().add(
+                          InsightsFetchRequested(
+                            month: now.month,
+                            year: now.year,
+                          ),
+                        );
+                        context.read<GoalBloc>().add(
+                          GoalFetchRequested(now.month, now.year),
+                        );
+
                         Navigator.pop(context); // Close bottom sheet
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -549,6 +564,11 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                             ),
                             backgroundColor: colorScheme.primary,
                             behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.only(
+                              bottom: 90,
+                              left: 16,
+                              right: 16,
+                            ),
                           ),
                         );
                       }

@@ -3,12 +3,16 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:finova/core/theme/app_colors.dart';
+import 'package:finova/domain/entities/goal_entity.dart';
+import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../auth/bloc/auth_bloc.dart';
+import '../../goals/bloc/goal_bloc.dart';
+import '../../home/bloc/transaction_bloc.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../bloc/insights_bloc.dart';
@@ -28,6 +32,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     context.read<InsightsBloc>().add(
       InsightsFetchRequested(month: now.month, year: now.year),
     );
+    context.read<GoalBloc>().add(GoalFetchRequested(now.month, now.year));
   }
 
   @override
@@ -36,195 +41,226 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final isDark = colorScheme.brightness == Brightness.dark;
     final currentMonthStr = DateFormat('MMMM').format(DateTime.now());
 
-    return BlocBuilder<InsightsBloc, InsightsState>(
-      builder: (context, state) {
-        return CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              backgroundColor: colorScheme.background.withOpacity(0.8),
-              elevation: 0,
-              toolbarHeight: 72,
-              flexibleSpace: ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(color: Colors.transparent),
-                ),
-              ),
-              title: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  final user = (authState is AuthAuthenticated)
-                      ? authState.user
-                      : null;
-                  return Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProfileScreen(),
-                            ),
+    return BlocBuilder<TransactionBloc, TransactionState>(
+      builder: (context, txnState) {
+        return BlocBuilder<GoalBloc, GoalState>(
+          builder: (context, goalState) {
+            return BlocBuilder<InsightsBloc, InsightsState>(
+              builder: (context, state) {
+                return CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      pinned: true,
+                      backgroundColor: colorScheme.background.withOpacity(0.8),
+                      elevation: 0,
+                      toolbarHeight: 72,
+                      flexibleSpace: ClipRRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(color: Colors.transparent),
+                        ),
+                      ),
+                      title: BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, authState) {
+                          final user = (authState is AuthAuthenticated)
+                              ? authState.user
+                              : null;
+                          return Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ProfileScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: colorScheme.surfaceContainerHighest,
+                                  ),
+                                  child: ClipOval(
+                                    child:
+                                        user?.profileImagePath != null &&
+                                            user!.profileImagePath!.isNotEmpty
+                                        ? Image.file(
+                                            File(user.profileImagePath!),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.person,
+                                              color: colorScheme.outline,
+                                            ),
+                                          )
+                                        : Image.network(
+                                            'https://lh3.googleusercontent.com/aida-public/AB6AXuArMfGM7cUNMmy0YHaP3-2aKk72tMn3fSdjYLwdLQC5yeV8xFYCTie5QBYUck9q84r1Z7qMdIq4DDIKSOZib4SKcTXO6ugNv62Bfxa4jcdz4wljYWB4KTovSPyBepLxxWiHjM2POtuNqIjeGW3RCjbM_YPpXKcXqd_zMV8kOyNOeA7pE620TN0SbRS8bLLA7nrc3FYtIkvZ9Wmq_AXZC_hMCVvJ7wbo4cwMJWyEJATXUrQoxZZeAN5EFWGwpm-OLykDk6pnyQzKtTc',
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.person,
+                                              color: colorScheme.outline,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Finova',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ],
                           );
                         },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colorScheme.surfaceContainerHighest,
-                          ),
-                          child: ClipOval(
-                            child:
-                                user?.profileImagePath != null &&
-                                    user!.profileImagePath!.isNotEmpty
-                                ? Image.file(
-                                    File(user.profileImagePath!),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Icon(
-                                      Icons.person,
-                                      color: colorScheme.outline,
-                                    ),
-                                  )
-                                : Image.network(
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuArMfGM7cUNMmy0YHaP3-2aKk72tMn3fSdjYLwdLQC5yeV8xFYCTie5QBYUck9q84r1Z7qMdIq4DDIKSOZib4SKcTXO6ugNv62Bfxa4jcdz4wljYWB4KTovSPyBepLxxWiHjM2POtuNqIjeGW3RCjbM_YPpXKcXqd_zMV8kOyNOeA7pE620TN0SbRS8bLLA7nrc3FYtIkvZ9Wmq_AXZC_hMCVvJ7wbo4cwMJWyEJATXUrQoxZZeAN5EFWGwpm-OLykDk6pnyQzKtTc',
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Icon(
-                                      Icons.person,
-                                      color: colorScheme.outline,
-                                    ),
-                                  ),
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.notifications_rounded,
+                              color: colorScheme.outline,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NotificationsScreen(),
+                                ),
+                              );
+                            },
+                            splashRadius: 24,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Finova',
-                        style: GoogleFonts.manrope(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.notifications_rounded,
-                      color: colorScheme.outline,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsScreen(),
-                        ),
-                      );
-                    },
-                    splashRadius: 24,
-                  ),
-                ),
-              ],
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 16,
-                bottom: 120,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Month Selector (Swipeable)
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        _buildMonthTab(currentMonthStr, true, colorScheme),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Hero: Month Summary
-                  Text(
-                    '$currentMonthStr Insights',
-                    style: GoogleFonts.manrope(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (state is InsightsLoaded)
-                    Text(
-                      state.totalSpent > 0
-                          ? 'Your spending looks steady this month.'
-                          : 'No expenses logged yet. Add some to see insights!',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurfaceVariant,
+                    SliverPadding(
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        top: 16,
+                        bottom: 120,
                       ),
-                    ),
-                  if (state is InsightsLoading || state is InsightsInitial)
-                    Text(
-                      'Analyzing your spending...',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  const SizedBox(height: 40),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          // Month Selector (Swipeable)
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: [
+                                _buildMonthTab(
+                                  currentMonthStr,
+                                  true,
+                                  colorScheme,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
 
-                  if (state is InsightsLoaded) ...[
-                    // Bento Grid Layout
-                    // Biggest Expense
-                    _buildBiggestExpenseCard(state, colorScheme, isDark),
-                    const SizedBox(height: 16),
+                          // Hero: Month Summary
+                          Text(
+                            '$currentMonthStr Insights',
+                            style: GoogleFonts.manrope(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (state is InsightsLoaded)
+                            Text(
+                              state.totalSpent > 0
+                                  ? 'Your spending looks steady this month.'
+                                  : 'No expenses logged yet. Add some to see insights!',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          if (state is InsightsLoading ||
+                              state is InsightsInitial)
+                            Text(
+                              'Analyzing your spending...',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          const SizedBox(height: 40),
 
-                    // Spending Heatmap
-                    _buildSpendingHeatmapCard(state, colorScheme, isDark),
-                    const SizedBox(height: 16),
+                          if (state is InsightsLoaded) ...[
+                            // Bento Grid Layout
+                            // Biggest Expense
+                            _buildBiggestExpenseCard(
+                              state,
+                              colorScheme,
+                              isDark,
+                            ),
+                            const SizedBox(height: 16),
 
-                    // 2-column row: Weekly Avg & Smart Insight
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildWeeklyAvgCard(
-                            state,
+                            // Spending Heatmap
+                            _buildSpendingHeatmapCard(
+                              state,
+                              colorScheme,
+                              isDark,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // 2-column row: Weekly Avg & Smart Insight
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildWeeklyAvgCard(
+                                    state,
+                                    colorScheme,
+                                    isDark,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildSmartInsightCard(
+                                    state,
+                                    colorScheme,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                          ] else if (state is InsightsLoading ||
+                              state is InsightsInitial) ...[
+                            const Center(child: CircularProgressIndicator()),
+                          ] else if (state is InsightsError) ...[
+                            Center(child: Text('Error: \${state.message}')),
+                          ],
+
+                          // Focus Card (Dynamic for Goal Progress)
+                          _buildFocusCard(
                             colorScheme,
                             isDark,
+                            txnState,
+                            goalState,
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildSmartInsightCard(state, colorScheme),
-                        ),
-                      ],
+                        ]),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                  ] else if (state is InsightsLoading ||
-                      state is InsightsInitial) ...[
-                    const Center(child: CircularProgressIndicator()),
-                  ] else if (state is InsightsError) ...[
-                    Center(child: Text('Error: \${state.message}')),
                   ],
-
-                  // Focus Card (Static for Visual Impact)
-                  _buildFocusCard(colorScheme, isDark),
-                ]),
-              ),
-            ),
-          ],
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -277,7 +313,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     ColorScheme colorScheme,
     bool isDark,
   ) {
-    final formatCurrency = NumberFormat.simpleCurrency();
+    final formatCurrency = NumberFormat.simpleCurrency(name: 'INR');
     final biggestAmount = state.categoryTotals[state.biggestCategory] ?? 0.0;
 
     return Container(
@@ -514,7 +550,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     ColorScheme colorScheme,
     bool isDark,
   ) {
-    final formatCurrency = NumberFormat.simpleCurrency();
+    final formatCurrency = NumberFormat.simpleCurrency(name: 'INR');
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -668,7 +704,37 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  Widget _buildFocusCard(ColorScheme colorScheme, bool isDark) {
+  Widget _buildFocusCard(
+    ColorScheme colorScheme,
+    bool isDark,
+    TransactionState txnState,
+    GoalState goalState,
+  ) {
+    double totalSavings = 0.0;
+    if (txnState is TransactionLoaded) {
+      double income = 0;
+      double expense = 0;
+      for (var tx in txnState.transactions) {
+        if (tx.type == DomainTransactionType.income) income += tx.amount;
+        if (tx.type == DomainTransactionType.expense) expense += tx.amount;
+      }
+      totalSavings = income - expense;
+    }
+
+    GoalEntity? currentGoal;
+    if (goalState is GoalLoaded && goalState.goals.isNotEmpty) {
+      currentGoal = goalState.goals.first as GoalEntity?;
+    }
+
+    if (currentGoal == null) {
+      return const SizedBox.shrink();
+    }
+
+    final progress = currentGoal.targetAmount > 0
+        ? (totalSavings / currentGoal.targetAmount).clamp(0.0, 1.0)
+        : 0.0;
+    final progressPct = (progress * 100).toStringAsFixed(0);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -703,7 +769,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Emergency Fund Progress',
+                  currentGoal.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -720,10 +788,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
                   alignment: Alignment.centerLeft,
                   child: FractionallySizedBox(
-                    widthFactor: 0.82,
+                    widthFactor: progress,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: colorScheme.primary,
+                        color: progress >= 1.0
+                            ? Colors.green
+                            : colorScheme.primary,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -734,7 +804,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
           const SizedBox(width: 16),
           Text(
-            '82%',
+            '$progressPct%',
             style: GoogleFonts.manrope(
               fontSize: 16,
               fontWeight: FontWeight.w900,
