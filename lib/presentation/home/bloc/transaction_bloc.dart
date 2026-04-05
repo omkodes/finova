@@ -1,7 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../domain/entities/transaction_entity.dart';
-import '../../../../domain/repositories/transaction_repository.dart';
+import 'package:finova/domain/entities/transaction_entity.dart';
+import 'package:finova/domain/repositories/transaction_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'transaction_event.dart';
 part 'transaction_state.dart';

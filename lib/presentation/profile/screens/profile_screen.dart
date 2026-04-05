@@ -4,9 +4,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../services/biometric_service.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../theme/theme_cubit.dart';
-import '../../../services/biometric_service.dart';
 import '../widgets/edit_profile_bottom_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
     }
-    
+
     await _biometricService.setBiometricEnabled(value);
     if (mounted) {
       setState(() {
@@ -94,7 +94,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       elevation: 0,
                       toolbarHeight: 64,
                       leading: IconButton(
-                        icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: colorScheme.primary,
+                        ),
                         onPressed: () => Navigator.pop(context),
                         splashRadius: 24,
                       ),
@@ -448,10 +451,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: Colors.white,
+                activeColor: colorScheme.onPrimary, // Usually white
                 activeTrackColor: colorScheme.primary,
-                inactiveThumbColor: colorScheme.background,
+
+                // Inactive State - This is what fixes the visibility
+                inactiveThumbColor: colorScheme.outline,
                 inactiveTrackColor: colorScheme.surfaceContainerHighest,
+                trackOutlineColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.transparent;
+                  }
+                  return colorScheme.outlineVariant;
+                }),
               ),
             ),
           ],

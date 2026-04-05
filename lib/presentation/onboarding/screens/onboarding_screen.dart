@@ -1,10 +1,11 @@
 import 'dart:ui';
+
+import 'package:finova/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../widgets/fade_slide_animation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../auth/bloc/auth_bloc.dart';
-import '../../home/screens/home_screen.dart';
+import '../../widgets/fade_slide_animation.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -50,8 +51,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (_formKey.currentState?.validate() ?? false) {
         final balance = double.parse(_balanceController.text);
         final budget = double.parse(_budgetController.text);
-        
-        context.read<AuthBloc>().add(AuthCompleteOnboardingRequested(balance, budget));
+
+        context.read<AuthBloc>().add(
+          AuthCompleteOnboardingRequested(balance, budget),
+        );
         Navigator.popUntil(context, (route) => route.isFirst);
       }
     }
@@ -59,7 +62,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _skipOnboarding() {
     // If skipped, they start with 0.0 balance/budget
-    context.read<AuthBloc>().add(const AuthCompleteOnboardingRequested(0.0, 0.0));
+    context.read<AuthBloc>().add(
+      const AuthCompleteOnboardingRequested(0.0, 0.0),
+    );
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
@@ -100,19 +105,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Container(color: Colors.transparent),
             ),
           ),
-          
+
           SafeArea(
             child: PageView(
               controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(), // Managed by buttons
+              physics:
+                  const NeverScrollableScrollPhysics(), // Managed by buttons
               onPageChanged: (index) {
                 setState(() => _currentPage = index);
               },
-              children: [
-                _buildSlide1(),
-                _buildSlide2(),
-                _buildSlide3Setup(),
-              ],
+              children: [_buildSlide1(), _buildSlide2(), _buildSlide3Setup()],
             ),
           ),
         ],
@@ -120,7 +122,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildWrapper({required int step, required String titlePart1, required String titlePart2, required String subtitle, required Widget illustration, required String buttonLabel, required VoidCallback onMainTap}) {
+  Widget _buildWrapper({
+    required int step,
+    required String titlePart1,
+    required String titlePart2,
+    required String subtitle,
+    required Widget illustration,
+    required String buttonLabel,
+    required VoidCallback onMainTap,
+  }) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -134,7 +144,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.outlineVariant.withOpacity(0.1)),
+                  border: Border.all(
+                    color: AppColors.outlineVariant.withOpacity(0.1),
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x0F191C1D),
@@ -160,9 +172,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 width: isCurrent ? 48 : 32,
                                 decoration: BoxDecoration(
                                   gradient: isCurrent
-                                      ? const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer])
+                                      ? const LinearGradient(
+                                          colors: [
+                                            AppColors.primary,
+                                            AppColors.primaryContainer,
+                                          ],
+                                        )
                                       : null,
-                                  color: isCurrent ? null : AppColors.primaryContainer.withOpacity(0.2),
+                                  color: isCurrent
+                                      ? null
+                                      : AppColors.primaryContainer.withOpacity(
+                                          0.2,
+                                        ),
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                               );
@@ -204,7 +225,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             children: [
                               TextSpan(
                                 text: titlePart2,
-                                style: const TextStyle(color: AppColors.primary),
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ],
                           ),
@@ -214,7 +237,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     FadeSlideAnimation(
                       delay: const Duration(milliseconds: 300),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         child: Text(
                           subtitle,
                           textAlign: TextAlign.center,
@@ -241,7 +267,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryContainer],
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryContainer,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -250,7 +279,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   color: Color(0x333525CD),
                                   offset: Offset(0, 10),
                                   blurRadius: 15,
-                                )
+                                ),
                               ],
                             ),
                             child: Material(
@@ -272,7 +301,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -281,7 +314,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -295,7 +328,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   letterSpacing: 2.0,
                   color: Colors.black38,
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -308,7 +341,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       step: 1,
       titlePart1: 'Track Every ',
       titlePart2: 'Penny',
-      subtitle: 'Easily log your daily expenses and see where your money goes with intuitive categorization.',
+      subtitle:
+          'Easily log your daily expenses and see where your money goes with intuitive categorization.',
       buttonLabel: 'Next Step',
       onMainTap: _nextPage,
       illustration: FadeSlideAnimation(
@@ -323,7 +357,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Stack(
             children: [
               const Center(
-                child: Icon(Icons.show_chart_rounded, size: 100, color: AppColors.primaryContainer),
+                child: Icon(
+                  Icons.show_chart_rounded,
+                  size: 100,
+                  color: AppColors.primaryContainer,
+                ),
               ),
               Positioned(
                 bottom: 12,
@@ -343,24 +381,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             height: 32,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer]),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryContainer,
+                                ],
+                              ),
                             ),
-                            child: const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 16),
+                            child: const Icon(
+                              Icons.receipt_long_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('SCANNING...', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: AppColors.onSurfaceVariant)),
-                              Text('₹42.50 • Groceries', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                              Text(
+                                'SCANNING...',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                              Text(
+                                '₹42.50 • Groceries',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.onSurface,
+                                ),
+                              ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -373,7 +435,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       step: 2,
       titlePart1: 'Conquer Your ',
       titlePart2: 'Goals',
-      subtitle: 'Set bold financial targets and monitor your progress with beautifully mapped insight charts.',
+      subtitle:
+          'Set bold financial targets and monitor your progress with beautifully mapped insight charts.',
       buttonLabel: 'Final Step',
       onMainTap: _nextPage,
       illustration: FadeSlideAnimation(
@@ -386,7 +449,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             borderRadius: BorderRadius.circular(24),
           ),
           child: const Center(
-            child: Icon(Icons.flag_circle_rounded, size: 100, color: AppColors.secondary),
+            child: Icon(
+              Icons.flag_circle_rounded,
+              size: 100,
+              color: AppColors.secondary,
+            ),
           ),
         ),
       ),
@@ -440,7 +507,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildInputBlock({required String label, required TextEditingController controller, required String hint, String? prefixText, required bool isNumber, String? subtext}) {
+  Widget _buildInputBlock({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    String? prefixText,
+    required bool isNumber,
+    String? subtext,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -457,7 +531,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          keyboardType: isNumber ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+          keyboardType: isNumber
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : TextInputType.text,
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 14,
@@ -467,16 +543,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           decoration: InputDecoration(
             hintText: hint,
             prefixText: prefixText != null ? '$prefixText  ' : null,
-            prefixStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+            prefixStyle: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
             filled: true,
             fillColor: AppColors.surfaceContainerLow,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primaryContainer, width: 2)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: AppColors.primaryContainer,
+                width: 2,
+              ),
+            ),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) return 'Required field';
-            if (isNumber && double.tryParse(value) == null) return 'Must be a number';
+            if (isNumber && double.tryParse(value) == null)
+              return 'Must be a number';
             return null;
           },
         ),
@@ -484,9 +576,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 8),
           Text(
             subtext,
-            style: const TextStyle(fontSize: 10, fontFamily: 'Inter', fontStyle: FontStyle.italic, color: AppColors.onSurfaceVariant),
+            style: const TextStyle(
+              fontSize: 10,
+              fontFamily: 'Inter',
+              fontStyle: FontStyle.italic,
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
-        ]
+        ],
       ],
     );
   }

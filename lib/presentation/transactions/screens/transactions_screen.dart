@@ -6,7 +6,7 @@ import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../home/bloc/transaction_bloc.dart';
 import '../../notifications/screens/notifications_screen.dart';
@@ -161,7 +161,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Search & Filters
-                _buildSearchAndFilters(),
+                _buildSearchAndFilters().animate().fade(duration: 400.ms).slideY(begin: 0.05, end: 0),
                 const SizedBox(height: 32),
 
                 // Header
@@ -180,7 +180,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       ),
                     ),
                   ],
-                ),
+                ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
                 const SizedBox(height: 24),
 
                 // Transactions List
@@ -194,7 +194,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                       );
                     } else if (state is TransactionLoaded) {
-                      return _buildTransactionList(state.transactions);
+                      return _buildTransactionList(state.transactions)
+                          .animate()
+                          .fade(duration: 400.ms, delay: 200.ms)
+                          .slideY(begin: 0.05, end: 0);
                     } else if (state is TransactionError) {
                       return Center(
                         child: Text(

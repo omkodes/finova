@@ -1,3 +1,7 @@
+import 'package:finova/data/repositories/notification_repository_impl.dart';
+import 'package:finova/domain/models/app_notification.dart';
+import 'package:finova/domain/repositories/i_auth_repository.dart';
+import 'package:finova/domain/repositories/transaction_repository.dart';
 import 'package:finova/presentation/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,8 +24,6 @@ import 'presentation/notifications/bloc/notification_event.dart';
 import 'presentation/onboarding/screens/onboarding_screen.dart';
 import 'presentation/theme/theme_cubit.dart';
 import 'services/notification_service.dart';
-import 'data/repositories/notification_repository_impl.dart';
-import 'domain/models/app_notification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,22 +41,25 @@ void main() async {
   if (now.hour >= 22) {
     final notificationRepo = NotificationRepositoryImpl();
     final notifications = await notificationRepo.getNotifications();
-    
+
     // Check if we already have a reminder for today
-    final hasTodayReminder = notifications.any((n) => 
-        n.type == 'reminder' && 
-        n.createdAt.year == now.year && 
-        n.createdAt.month == now.month && 
-        n.createdAt.day == now.day);
-        
+    final hasTodayReminder = notifications.any(
+      (n) =>
+          n.type == 'reminder' &&
+          n.createdAt.year == now.year &&
+          n.createdAt.month == now.month &&
+          n.createdAt.day == now.day,
+    );
+
     if (!hasTodayReminder) {
       await notificationRepo.insertNotification(
         AppNotification(
           title: 'Daily Expense Reminder',
-          description: 'It\'s past 10 PM! Don\'t forget to log today\'s expenses and stay on track with your goals.',
+          description:
+              'It\'s past 10 PM! Don\'t forget to log today\'s expenses and stay on track with your goals.',
           type: 'reminder',
           createdAt: DateTime(now.year, now.month, now.day, 22, 0),
-        )
+        ),
       );
     }
   }
@@ -78,14 +83,16 @@ class FinovaApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) =>
-                AuthBloc(authRepository: context.read<AuthRepositoryImpl>())
-                  ..add(AuthCheckRequested()),
+            create: (context) => AuthBloc(
+              authRepository:
+                  context.read<AuthRepositoryImpl>() as IAuthRepository,
+            )..add(AuthCheckRequested()),
           ),
           BlocProvider(
-            create: (context) =>
-                TransactionBloc(context.read<TransactionRepositoryImpl>())
-                  ..add(TransactionFetchRequested()),
+            create: (context) => TransactionBloc(
+              context.read<TransactionRepositoryImpl>()
+                  as TransactionRepository,
+            )..add(TransactionFetchRequested()),
           ),
           BlocProvider(
             create: (context) => GoalBloc(context.read<GoalRepositoryImpl>()),
@@ -101,9 +108,10 @@ class FinovaApp extends StatelessWidget {
                 InsightsBloc(context.read<TransactionRepositoryImpl>()),
           ),
           BlocProvider(
-            create: (context) =>
-                NotificationBloc(notificationRepository: context.read<NotificationRepositoryImpl>())
-                  ..add(LoadNotifications()),
+            create: (context) => NotificationBloc(
+              notificationRepository: context
+                  .read<NotificationRepositoryImpl>(),
+            )..add(LoadNotifications()),
           ),
           BlocProvider(create: (context) => ThemeCubit()),
         ],

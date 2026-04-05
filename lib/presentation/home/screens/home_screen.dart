@@ -7,7 +7,7 @@ import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../goals/bloc/goal_bloc.dart';
 import '../../goals/screens/goals_screen.dart';
@@ -388,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                      ),
+                      ).animate().fade(duration: 400.ms).slideY(begin: 0.05, end: 0),
                       const SizedBox(height: 8),
 
                       Wrap(
@@ -443,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ],
-                      ),
+                      ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
                       const SizedBox(height: 32),
 
                       // 2. Bento Grid
@@ -458,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         othersPct,
                         currentGoal,
                         netWorth,
-                      ),
+                      ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.05, end: 0),
 
                       const SizedBox(height: 32),
 
@@ -493,7 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ],
-                      ),
+                      ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.05, end: 0),
                       const SizedBox(height: 16),
 
                       // Horizontal Timeline List
@@ -537,7 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 }).toList(),
                               ),
-                      ),
+                      ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.05, end: 0),
                     ]),
                   ),
                 ),

@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:finova/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../auth/bloc/auth_bloc.dart';
 
 class EditProfileBottomSheet extends StatefulWidget {

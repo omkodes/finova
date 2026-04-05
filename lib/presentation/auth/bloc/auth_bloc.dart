@@ -1,7 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../domain/entities/user_account.dart';
-import '../../../../domain/repositories/i_auth_repository.dart';
+import 'package:finova/domain/entities/user_account.dart';
+import 'package:finova/domain/repositories/i_auth_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 // --- Events ---
 abstract class AuthEvent extends Equatable {
@@ -34,7 +34,10 @@ class AuthCheckRequested extends AuthEvent {}
 class AuthCompleteOnboardingRequested extends AuthEvent {
   final double startingBalance;
   final double monthlyBudget;
-  const AuthCompleteOnboardingRequested(this.startingBalance, this.monthlyBudget);
+  const AuthCompleteOnboardingRequested(
+    this.startingBalance,
+    this.monthlyBudget,
+  );
   @override
   List<Object> get props => [startingBalance, monthlyBudget];
 }
@@ -43,9 +46,17 @@ class AuthUpdateProfileRequested extends AuthEvent {
   final String? name;
   final double? monthlyBudget;
   final String? profileImagePath;
-  const AuthUpdateProfileRequested({this.name, this.monthlyBudget, this.profileImagePath});
+  const AuthUpdateProfileRequested({
+    this.name,
+    this.monthlyBudget,
+    this.profileImagePath,
+  });
   @override
-  List<Object> get props => [name ?? '', monthlyBudget ?? 0.0, profileImagePath ?? ''];
+  List<Object> get props => [
+    name ?? '',
+    monthlyBudget ?? 0.0,
+    profileImagePath ?? '',
+  ];
 }
 
 class AuthDeleteAccountRequested extends AuthEvent {
@@ -63,15 +74,20 @@ abstract class AuthState extends Equatable {
 }
 
 class AuthInitial extends AuthState {}
+
 class AuthLoading extends AuthState {}
+
 class AuthAuthenticated extends AuthState {
   final UserAccount user;
   const AuthAuthenticated(this.user);
   @override
   List<Object?> get props => [user];
 }
+
 class AuthUnauthenticated extends AuthState {}
+
 class AuthSignUpSuccess extends AuthState {}
+
 class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);
@@ -94,7 +110,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onAuthDeleteAccountRequested(
-      AuthDeleteAccountRequested event, Emitter<AuthState> emit) async {
+    AuthDeleteAccountRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       await authRepository.deleteAccount(event.email);
@@ -105,7 +123,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onAuthUpdateProfileRequested(
-      AuthUpdateProfileRequested event, Emitter<AuthState> emit) async {
+    AuthUpdateProfileRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     if (state is AuthAuthenticated) {
       final currentUser = (state as AuthAuthenticated).user;
       emit(AuthLoading());
@@ -125,12 +145,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onAuthCompleteOnboardingRequested(
-      AuthCompleteOnboardingRequested event, Emitter<AuthState> emit) async {
+    AuthCompleteOnboardingRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     if (state is AuthAuthenticated) {
       final currentUser = (state as AuthAuthenticated).user;
       try {
         final updatedUser = await authRepository.completeOnboarding(
-            currentUser.email, event.startingBalance, event.monthlyBudget);
+          currentUser.email,
+          event.startingBalance,
+          event.monthlyBudget,
+        );
         emit(AuthAuthenticated(updatedUser)); // Reloads logic
       } catch (e) {
         emit(AuthError('Failed to save settings: $e'));
@@ -138,7 +163,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAuthCheckRequested(AuthCheckRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onAuthCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final user = await authRepository.getCurrentUser();
@@ -152,7 +180,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAuthLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onAuthLoginRequested(
+    AuthLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final user = await authRepository.login(event.email, event.password);
@@ -162,7 +193,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAuthSignUpRequested(AuthSignUpRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onAuthSignUpRequested(
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       await authRepository.signUp(event.email, event.password, event.name);
@@ -172,7 +206,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onAuthLogoutRequested(AuthLogoutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onAuthLogoutRequested(
+    AuthLogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       await authRepository.logout();

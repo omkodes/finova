@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../goals/bloc/goal_bloc.dart';
 import '../../home/bloc/transaction_bloc.dart';
@@ -253,7 +253,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                             txnState,
                             goalState,
                           ),
-                        ]),
+                        ].animate(interval: 50.ms).fade(duration: 400.ms).slideY(begin: 0.05, end: 0)),
                       ),
                     ),
                   ],

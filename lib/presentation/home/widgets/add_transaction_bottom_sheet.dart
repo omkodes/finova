@@ -2,7 +2,7 @@ import 'package:finova/core/theme/app_colors.dart';
 import 'package:finova/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../goals/bloc/goal_bloc.dart';
 import '../../insights/bloc/insights_bloc.dart';
 import '../bloc/transaction_bloc.dart';
@@ -591,7 +591,7 @@ class _AddTransactionBottomSheetState extends State<AddTransactionBottomSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-            ],
+            ].animate(interval: 40.ms).fade(duration: 300.ms).slideY(begin: 0.05, end: 0),
           ),
         ),
       ),
