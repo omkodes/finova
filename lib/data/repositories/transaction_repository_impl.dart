@@ -2,6 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../datasources/sqflite_database_service.dart';
+import '../../domain/models/app_notification.dart';
+import 'notification_repository_impl.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   @override
@@ -18,6 +20,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
         'createdAt': transaction.createdAt.toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    String action = transaction.type == DomainTransactionType.income ? 'received' : 'spent';
+    await NotificationRepositoryImpl().insertNotification(
+      AppNotification(
+        title: 'Transaction alert',
+        description: 'Successfully $action ₹${transaction.amount.toStringAsFixed(2)} for ${transaction.category}.',
+        type: 'transaction',
+        createdAt: DateTime.now(),
+      )
     );
   }
 

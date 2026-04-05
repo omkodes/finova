@@ -1,6 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../domain/models/app_notification.dart';
+import '../bloc/notification_bloc.dart';
+import '../bloc/notification_state.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -69,44 +73,66 @@ class NotificationsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 40),
 
-                    // Today Section
-                    _buildSectionHeader(context, 'Today'),
-                    const SizedBox(height: 24),
-                    _buildSimpleNotification(
-                      context,
-                      icon: Icons.account_balance_wallet_rounded,
-                      iconColor: colorScheme.primary,
-                      iconBg: colorScheme.primaryContainer,
-                      title: 'Transaction alert',
-                      time: '4h ago',
-                      description: 'Successfully spent ₹45.20 at Whole Foods.',
-                    ),
-                    const SizedBox(height: 48),
+                    BlocBuilder<NotificationBloc, NotificationState>(
+                      builder: (context, state) {
+                        if (state is NotificationLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (state is NotificationError) {
+                          return Center(child: Text(state.message, style: TextStyle(color: colorScheme.error)));
+                        } else if (state is NotificationLoaded) {
+                          if (state.notifications.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: Center(
+                                child: Text(
+                                  'No notifications right now',
+                                  style: TextStyle(fontFamily: 'Inter', fontSize: 16, color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          
+                          final now = DateTime.now();
+                          final todayNotifications = state.notifications.where((n) => 
+                              n.createdAt.year == now.year &&
+                              n.createdAt.month == now.month &&
+                              n.createdAt.day == now.day).toList();
+                              
+                          final earlierNotifications = state.notifications.where((n) => 
+                              !(n.createdAt.year == now.year &&
+                              n.createdAt.month == now.month &&
+                              n.createdAt.day == now.day)).toList();
 
-                    // Earlier Section
-                    _buildSectionHeader(context, 'Earlier'),
-                    const SizedBox(height: 24),
-                    _buildSimpleNotification(
-                      context,
-                      icon: Icons.shield_rounded,
-                      iconColor: colorScheme.error,
-                      iconBg: colorScheme.errorContainer,
-                      title: 'Security alert',
-                      time: 'Yesterday',
-                      description: 'New login detected on a Chrome browser.',
-                      isUnread: true,
+                          return Column(
+                            key: const ValueKey('notification_list'),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (todayNotifications.isNotEmpty) ...[
+                                _buildSectionHeader(context, 'Today'),
+                                const SizedBox(height: 24),
+                                ...todayNotifications.map((n) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _buildNotificationCard(context, n),
+                                )).toList(),
+                                const SizedBox(height: 32),
+                              ],
+                              
+                              if (earlierNotifications.isNotEmpty) ...[
+                                _buildSectionHeader(context, 'Earlier'),
+                                const SizedBox(height: 24),
+                                ...earlierNotifications.map((n) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _buildNotificationCard(context, n),
+                                )).toList(),
+                                const SizedBox(height: 48),
+                              ],
+                            ],
+                          );
+                        }
+                        
+                        return const SizedBox.shrink();
+                      },
                     ),
-                    const SizedBox(height: 16),
-                    _buildSimpleNotification(
-                      context,
-                      icon: Icons.timer_rounded,
-                      iconColor: colorScheme.tertiary,
-                      iconBg: colorScheme.tertiaryContainer,
-                      title: 'Challenge reminder',
-                      time: '2 days ago',
-                      description: 'Don\'t forget: Your "No Food Delivery" challenge ends in 2 days.',
-                    ),
-                    const SizedBox(height: 48),
 
                     const SizedBox(height: 80),
                   ]),
@@ -143,17 +169,39 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleNotification(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    required String title,
-    required String time,
-    required String description,
-    bool isUnread = false,
-  }) {
+  Widget _buildNotificationCard(BuildContext context, AppNotification notification) {
     final colorScheme = Theme.of(context).colorScheme;
+    
+    IconData icon;
+    Color iconColor;
+    Color iconBg;
+
+    switch (notification.type) {
+      case 'transaction':
+        icon = Icons.account_balance_wallet_rounded;
+        iconColor = colorScheme.primary;
+        iconBg = colorScheme.primaryContainer;
+        break;
+      case 'security':
+        icon = Icons.shield_rounded;
+        iconColor = colorScheme.error;
+        iconBg = colorScheme.errorContainer;
+        break;
+      case 'reminder':
+        icon = Icons.timer_rounded;
+        iconColor = colorScheme.tertiary;
+        iconBg = colorScheme.tertiaryContainer;
+        break;
+      case 'system':
+      default:
+        icon = Icons.notifications_rounded;
+        iconColor = colorScheme.secondary;
+        iconBg = colorScheme.secondaryContainer;
+        break;
+    }
+
+    String timeText = _getTimeText(notification.createdAt);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -171,7 +219,15 @@ class NotificationsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIconContainer(icon, iconColor, iconBg),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -180,17 +236,22 @@ class NotificationsScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                        fontSize: 14,
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
-                      time,
+                      timeText,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
@@ -201,7 +262,7 @@ class NotificationsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  description,
+                  notification.description,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
@@ -212,7 +273,7 @@ class NotificationsScreen extends StatelessWidget {
               ],
             ),
           ),
-          if (isUnread) ...[
+          if (notification.isUnread) ...[
             const SizedBox(width: 12),
             Container(
               width: 8,
@@ -229,15 +290,19 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIconContainer(IconData icon, Color color, Color bg) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: color, size: 24),
-    );
+  String _getTimeText(DateTime createdAt) {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inMinutes < 60) {
+      if (difference.inMinutes <= 1) return 'Just now';
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24 && now.day == createdAt.day) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inHours < 48 && (now.day - createdAt.day).abs() == 1) { // simple yesterday
+      return 'Yesterday';
+    } else {
+      return '${createdAt.day}/${createdAt.month}/${createdAt.year}';
+    }
   }
 }

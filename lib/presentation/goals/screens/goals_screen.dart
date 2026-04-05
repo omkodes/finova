@@ -729,7 +729,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                             style: GoogleFonts.manrope(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: isActive ? Colors.white : colorScheme.onSurface,
+                              color: isActive
+                                  ? Colors.white
+                                  : colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -750,9 +752,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     // Active badge OR Start button
                     if (isActive)
                       GestureDetector(
-                        onTap: () => context
-                            .read<ChallengeBloc>()
-                            .add(ChallengeStopRequested(challenge!.id!)),
+                        onTap: () => context.read<ChallengeBloc>().add(
+                          ChallengeStopRequested(challenge!.id!),
+                        ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -790,9 +792,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        onPressed: () => context
-                            .read<ChallengeBloc>()
-                            .add(ChallengeStartRequested()),
+                        onPressed: () => context.read<ChallengeBloc>().add(
+                          ChallengeStartRequested(),
+                        ),
                         child: const Text('START'),
                       ),
                   ],
@@ -820,7 +822,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               ),
                             ),
                             Text(
-                              streak == 1 ? '1 Day 🔥' : '$streak Days ${streak > 1 ? "🔥" : ""}',
+                              streak == 1
+                                  ? '1 Day 🔥'
+                                  : '$streak Days ${streak > 1 ? "🔥" : ""}',
                               style: GoogleFonts.manrope(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
@@ -844,7 +848,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               ),
                             ),
                             Text(
-                              isActive ? 'Active ✅' : 'Inactive',
+                              isActive ? 'Active' : 'Inactive',
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -864,7 +868,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(7, (i) {
                         if (i > todayIndex) {
-                          return _buildDayTrackerFuture(dayLabels[i], colorScheme);
+                          return _buildDayTrackerFuture(
+                            dayLabels[i],
+                            colorScheme,
+                          );
                         } else if (i == todayIndex) {
                           return _buildDayTrackerCurrent(
                             dayLabels[i],
@@ -889,7 +896,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
       },
     );
   }
-
 
   Widget _buildDayTracker(String day, bool completed, ColorScheme colorScheme) {
     return Column(
@@ -920,7 +926,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
   }
 
-  Widget _buildDayTrackerCurrent(String day, ColorScheme colorScheme, {bool achieved = false}) {
+  Widget _buildDayTrackerCurrent(
+    String day,
+    ColorScheme colorScheme, {
+    bool achieved = false,
+  }) {
     return Column(
       children: [
         Text(
@@ -937,16 +947,22 @@ class _GoalsScreenState extends State<GoalsScreen> {
           height: 40,
           decoration: BoxDecoration(
             color: achieved ? colorScheme.secondary : Colors.transparent,
-            border: achieved ? null : Border.all(
-              color: colorScheme.primary,
-              width: 2,
-              style: BorderStyle.solid,
-            ),
+            border: achieved
+                ? null
+                : Border.all(
+                    color: colorScheme.primary,
+                    width: 2,
+                    style: BorderStyle.solid,
+                  ),
             borderRadius: BorderRadius.circular(8),
           ),
           child: achieved
               ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
-              : Icon(Icons.circle_outlined, color: colorScheme.primary, size: 20),
+              : Icon(
+                  Icons.circle_outlined,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
         ),
       ],
     );

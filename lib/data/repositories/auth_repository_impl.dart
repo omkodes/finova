@@ -1,8 +1,10 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../domain/entities/user_account.dart';
+import '../../domain/models/app_notification.dart';
 import '../../domain/repositories/i_auth_repository.dart';
 import '../datasources/sqflite_database_service.dart';
+import 'notification_repository_impl.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   static const String _sessionKey = 'current_user_email';
@@ -22,16 +24,24 @@ class AuthRepositoryImpl implements IAuthRepository {
       throw Exception('User already exists');
     }
 
-    final id = await db.insert(
-      'users',
-      {
-        'email': email,
-        'name': name,
-        'password': password, // Real-world apps should hash this
-        'startingBalance': 0.0,
-        'monthlyBudget': 0.0,
-        'hasCompletedOnboarding': 0, // 0 for false in SQLite
-      },
+    final id = await db.insert('users', {
+      'email': email,
+      'name': name,
+      'password': password, // Real-world apps should hash this
+      'startingBalance': 0.0,
+      'monthlyBudget': 0.0,
+      'hasCompletedOnboarding': 0, // 0 for false in SQLite
+    });
+
+    // Welcome Notification
+    await NotificationRepositoryImpl().insertNotification(
+      AppNotification(
+        title: 'Welcome to Finova!',
+        description:
+            'Track your progress, secure your account, and manage your spending starting today.',
+        type: 'system',
+        createdAt: DateTime.now(),
+      ),
     );
 
     // Return the created user without saving the session (forces manual login)
@@ -61,6 +71,16 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
 
     await _saveSession(email);
+
+    // Security Alert Notification
+    await NotificationRepositoryImpl().insertNotification(
+      AppNotification(
+        title: 'Security alert',
+        description: 'New login detected on a device.',
+        type: 'security',
+        createdAt: DateTime.now(),
+      ),
+    );
 
     final user = users.first;
     return UserAccount(
@@ -113,7 +133,11 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<UserAccount> completeOnboarding(String email, double balance, double budget) async {
+  Future<UserAccount> completeOnboarding(
+    String email,
+    double balance,
+    double budget,
+  ) async {
     final db = await SqfliteDatabaseService.database;
 
     await db.update(
@@ -159,15 +183,11 @@ class AuthRepositoryImpl implements IAuthRepository {
     final Map<String, dynamic> updates = {};
     if (name != null) updates['name'] = name;
     if (monthlyBudget != null) updates['monthlyBudget'] = monthlyBudget;
-    if (profileImagePath != null) updates['profileImagePath'] = profileImagePath;
+    if (profileImagePath != null)
+      updates['profileImagePath'] = profileImagePath;
 
     if (updates.isNotEmpty) {
-      await db.update(
-        'users',
-        updates,
-        where: 'email = ?',
-        whereArgs: [email],
-      );
+      await db.update('users', updates, where: 'email = ?', whereArgs: [email]);
     }
 
     final List<Map<String, dynamic>> users = await db.query(
@@ -194,10 +214,6 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> deleteAccount(String email) async {
     final db = await SqfliteDatabaseService.database;
     await logout(); // Clear session first
-    await db.delete(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
-    );
+    await db.delete('users', where: 'email = ?', whereArgs: [email]);
   }
 }

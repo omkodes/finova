@@ -14,9 +14,13 @@ import 'presentation/goals/bloc/challenge_bloc.dart';
 import 'presentation/goals/bloc/goal_bloc.dart';
 import 'presentation/home/bloc/transaction_bloc.dart';
 import 'presentation/insights/bloc/insights_bloc.dart';
+import 'presentation/notifications/bloc/notification_bloc.dart';
+import 'presentation/notifications/bloc/notification_event.dart';
 import 'presentation/onboarding/screens/onboarding_screen.dart';
 import 'presentation/theme/theme_cubit.dart';
 import 'services/notification_service.dart';
+import 'data/repositories/notification_repository_impl.dart';
+import 'domain/models/app_notification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +32,31 @@ void main() async {
 
   // Pre-initialize standard connection to Sqflite
   await SqfliteDatabaseService.database;
+
+  // App Launch Check: Evaluate if the 10 PM daily reminder should be appended to the DB
+  final now = DateTime.now();
+  if (now.hour >= 22) {
+    final notificationRepo = NotificationRepositoryImpl();
+    final notifications = await notificationRepo.getNotifications();
+    
+    // Check if we already have a reminder for today
+    final hasTodayReminder = notifications.any((n) => 
+        n.type == 'reminder' && 
+        n.createdAt.year == now.year && 
+        n.createdAt.month == now.month && 
+        n.createdAt.day == now.day);
+        
+    if (!hasTodayReminder) {
+      await notificationRepo.insertNotification(
+        AppNotification(
+          title: 'Daily Expense Reminder',
+          description: 'It\'s past 10 PM! Don\'t forget to log today\'s expenses and stay on track with your goals.',
+          type: 'reminder',
+          createdAt: DateTime(now.year, now.month, now.day, 22, 0),
+        )
+      );
+    }
+  }
 
   runApp(const FinovaApp());
 }
@@ -43,6 +72,7 @@ class FinovaApp extends StatelessWidget {
         RepositoryProvider(create: (context) => TransactionRepositoryImpl()),
         RepositoryProvider(create: (context) => GoalRepositoryImpl()),
         RepositoryProvider(create: (context) => ChallengeRepositoryImpl()),
+        RepositoryProvider(create: (context) => NotificationRepositoryImpl()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -68,6 +98,11 @@ class FinovaApp extends StatelessWidget {
           BlocProvider(
             create: (context) =>
                 InsightsBloc(context.read<TransactionRepositoryImpl>()),
+          ),
+          BlocProvider(
+            create: (context) =>
+                NotificationBloc(notificationRepository: context.read<NotificationRepositoryImpl>())
+                  ..add(LoadNotifications()),
           ),
           BlocProvider(create: (context) => ThemeCubit()),
         ],

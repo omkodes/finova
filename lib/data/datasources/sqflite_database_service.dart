@@ -16,7 +16,7 @@ class SqfliteDatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -25,6 +25,18 @@ class SqfliteDatabaseService {
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE users ADD COLUMN profileImagePath TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE notifications(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          type TEXT NOT NULL,
+          isUnread INTEGER DEFAULT 1,
+          createdAt TEXT NOT NULL
+        )
+      ''');
     }
   }
 
@@ -74,6 +86,17 @@ class SqfliteDatabaseService {
         startDate TEXT NOT NULL,
         streakCount INTEGER DEFAULT 0,
         isActive INTEGER DEFAULT 1
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE notifications(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        type TEXT NOT NULL,
+        isUnread INTEGER DEFAULT 1,
+        createdAt TEXT NOT NULL
       )
     ''');
   }
