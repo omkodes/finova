@@ -1,7 +1,9 @@
 import 'dart:ui';
+
+import 'package:finova/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
+
 import '../../widgets/fade_slide_animation.dart';
 import '../bloc/auth_bloc.dart';
 import 'login_screen.dart';
@@ -18,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -30,12 +33,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _onSignUp() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthSignUpRequested(
-              _emailController.text.trim(),
-              _passwordController.text,
-              _nameController.text.trim(),
-            ),
-          );
+        AuthSignUpRequested(
+          _emailController.text.trim(),
+          _passwordController.text,
+          _nameController.text.trim(),
+        ),
+      );
     }
   }
 
@@ -65,7 +68,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               content: Text(state.message),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           );
         }
@@ -108,7 +113,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 48,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 448), // max-w-md
                   child: Form(
@@ -127,7 +135,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   gradient: const LinearGradient(
-                                    colors: [AppColors.primary, AppColors.primaryContainer],
+                                    colors: [
+                                      AppColors.primary,
+                                      AppColors.primaryContainer,
+                                    ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
@@ -136,7 +147,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       color: Color(0x0F191C1D),
                                       offset: Offset(0, 10),
                                       blurRadius: 40,
-                                    )
+                                    ),
                                   ],
                                 ),
                                 child: const Icon(
@@ -158,7 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 48),
 
                         FadeSlideAnimation(
@@ -172,7 +183,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   color: Color(0x0F191C1D),
                                   offset: Offset(0, 10),
                                   blurRadius: 40,
-                                )
+                                ),
                               ],
                             ),
                             padding: const EdgeInsets.all(32),
@@ -218,25 +229,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                                 TextFormField(
                                   controller: _nameController,
-                                  style: const TextStyle(color: AppColors.onSurface),
+                                  style: const TextStyle(
+                                    color: AppColors.onSurface,
+                                  ),
                                   cursorColor: AppColors.primary,
                                   decoration: InputDecoration(
                                     hintText: 'Enter your full name',
-                                    hintStyle: TextStyle(color: AppColors.outline.withOpacity(0.5)),
+                                    hintStyle: TextStyle(
+                                      color: AppColors.outline.withOpacity(0.5),
+                                    ),
                                     filled: true,
                                     fillColor: AppColors.surfaceContainerLow,
-                                    prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.outline, size: 20),
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                    prefixIcon: const Icon(
+                                      Icons.person_outline_rounded,
+                                      color: AppColors.outline,
+                                      size: 20,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 16,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
-                                  validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+                                  validator: (value) =>
+                                      (value == null || value.isEmpty)
+                                      ? 'Required'
+                                      : null,
                                 ),
                                 const SizedBox(height: 24),
 
@@ -256,28 +284,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 TextFormField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
-                                  style: const TextStyle(color: AppColors.onSurface),
+                                  style: const TextStyle(
+                                    color: AppColors.onSurface,
+                                  ),
                                   cursorColor: AppColors.primary,
                                   decoration: InputDecoration(
                                     hintText: 'name@company.com',
-                                    hintStyle: TextStyle(color: AppColors.outline.withOpacity(0.5)),
+                                    hintStyle: TextStyle(
+                                      color: AppColors.outline.withOpacity(0.5),
+                                    ),
                                     filled: true,
                                     fillColor: AppColors.surfaceContainerLow,
-                                    prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.outline, size: 20),
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                    prefixIcon: const Icon(
+                                      Icons.mail_outline_rounded,
+                                      color: AppColors.outline,
+                                      size: 20,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 16,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
-                                  validator: (value) => (value == null || !value.contains('@')) ? 'Invalid email' : null,
+                                  validator: (value) =>
+                                      (value == null || !value.contains('@'))
+                                      ? 'Invalid email'
+                                      : null,
                                 ),
                                 const SizedBox(height: 24),
-                                
+
                                 // Password Field
                                 const Padding(
                                   padding: EdgeInsets.only(left: 4, bottom: 8),
@@ -293,31 +338,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                                 TextFormField(
                                   controller: _passwordController,
-                                  obscureText: true,
-                                  style: const TextStyle(color: AppColors.onSurface),
+                                  obscureText: _obscurePassword,
+                                  style: const TextStyle(
+                                    color: AppColors.onSurface,
+                                  ),
                                   cursorColor: AppColors.primary,
                                   decoration: InputDecoration(
                                     hintText: 'Create a secure password',
-                                    hintStyle: TextStyle(color: AppColors.outline.withOpacity(0.5)),
+                                    hintStyle: TextStyle(
+                                      color: AppColors.outline.withOpacity(0.5),
+                                    ),
                                     filled: true,
                                     fillColor: AppColors.surfaceContainerLow,
-                                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.outline, size: 20),
-                                    suffixIcon: const Icon(Icons.visibility_rounded, color: AppColors.outline, size: 20),
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                    prefixIcon: const Icon(
+                                      Icons.lock_outline_rounded,
+                                      color: AppColors.outline,
+                                      size: 20,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_rounded
+                                            : Icons.visibility_off_rounded,
+                                        color: AppColors.outline,
+                                        size: 20,
+                                      ),
+                                      onPressed: () => setState(
+                                        () => _obscurePassword =
+                                            !_obscurePassword,
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 16,
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
-                                  validator: (value) => (value == null || value.length < 6) ? 'Minimum 6 chars' : null,
+                                  validator: (value) =>
+                                      (value == null || value.length < 6)
+                                      ? 'Minimum 6 chars'
+                                      : null,
                                 ),
-                                
+
                                 const SizedBox(height: 24),
-                                
+
                                 BlocBuilder<AuthBloc, AuthState>(
                                   builder: (context, state) {
                                     final isLoading = state is AuthLoading;
@@ -327,7 +401,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(12),
                                         gradient: const LinearGradient(
-                                          colors: [AppColors.primary, AppColors.primaryContainer],
+                                          colors: [
+                                            AppColors.primary,
+                                            AppColors.primaryContainer,
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -336,34 +413,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             color: Color(0x0F191C1D),
                                             offset: Offset(0, 10),
                                             blurRadius: 40,
-                                          )
+                                          ),
                                         ],
                                       ),
                                       child: Material(
                                         color: Colors.transparent,
                                         child: InkWell(
                                           onTap: isLoading ? null : _onSignUp,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           child: Center(
                                             child: isLoading
                                                 ? const SizedBox(
-                                                    height: 24, width: 24,
-                                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                                    height: 24,
+                                                    width: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                          strokeWidth: 2,
+                                                        ),
                                                   )
                                                 : Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
                                                     children: const [
                                                       Text(
                                                         'Sign Up',
                                                         style: TextStyle(
                                                           fontFamily: 'Manrope',
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                           fontSize: 18,
                                                           color: Colors.white,
                                                         ),
                                                       ),
                                                       SizedBox(width: 8),
-                                                      Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                                                      Icon(
+                                                        Icons
+                                                            .arrow_forward_rounded,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
                                                     ],
                                                   ),
                                           ),
@@ -387,11 +479,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   PageRouteBuilder(
-                                    transitionDuration: const Duration(milliseconds: 400),
-                                    pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      return FadeTransition(opacity: animation, child: child);
-                                    },
+                                    transitionDuration: const Duration(
+                                      milliseconds: 400,
+                                    ),
+                                    pageBuilder:
+                                        (
+                                          context,
+                                          animation,
+                                          secondaryAnimation,
+                                        ) => const LoginScreen(),
+                                    transitionsBuilder:
+                                        (
+                                          context,
+                                          animation,
+                                          secondaryAnimation,
+                                          child,
+                                        ) {
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
                                   ),
                                 );
                               },

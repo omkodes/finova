@@ -127,25 +127,42 @@ class FinovaApp extends StatelessWidget {
                   child: child!,
                 );
               },
-              home: BlocBuilder<AuthBloc, AuthState>(
-                buildWhen: (previous, current) {
-                  return current is AuthAuthenticated ||
-                      current is AuthUnauthenticated;
-                },
-                builder: (context, state) {
-                  if (state is AuthAuthenticated) {
-                    if (!state.user.hasCompletedOnboarding) {
-                      return const OnboardingScreen();
-                    }
-                    return const finova_auth.BiometricWrapper(child: HomeScreen());
-                  }
-                  return const LoginScreen();
-                },
-              ),
+              home: const _AuthGate(),
+              onGenerateRoute: (settings) {
+                if (settings.name == '/') {
+                  return MaterialPageRoute(builder: (_) => const _AuthGate());
+                }
+                return null;
+              },
             );
           },
         ),
       ),
+    );
+  }
+}
+
+/// Decides which screen to show based on auth state.
+/// Registered as both `home:` and the `'/'` named route so that
+/// [Navigator.pushNamedAndRemoveUntil] after a successful login properly
+/// resolves here and the [BlocBuilder] reacts to [AuthAuthenticated].
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      buildWhen: (previous, current) =>
+          current is AuthAuthenticated || current is AuthUnauthenticated,
+      builder: (context, state) {
+        if (state is AuthAuthenticated) {
+          if (!state.user.hasCompletedOnboarding) {
+            return const OnboardingScreen();
+          }
+          return const finova_auth.BiometricWrapper(child: HomeScreen());
+        }
+        return const LoginScreen();
+      },
     );
   }
 }

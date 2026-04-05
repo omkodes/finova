@@ -72,15 +72,26 @@ class AuthRepositoryImpl implements IAuthRepository {
 
     await _saveSession(email);
 
-    // Security Alert Notification
-    await NotificationRepositoryImpl().insertNotification(
-      AppNotification(
-        title: 'Security alert',
-        description: 'New login detected on a device.',
-        type: 'security',
-        createdAt: DateTime.now(),
-      ),
-    );
+    // Security Alert Notification — insert at most once per day
+    final notificationRepo = NotificationRepositoryImpl();
+    final existing = await notificationRepo.getNotifications();
+    final now = DateTime.now();
+    final hasAlertToday = existing.any((n) =>
+        n.type == 'security' &&
+        n.createdAt.year == now.year &&
+        n.createdAt.month == now.month &&
+        n.createdAt.day == now.day);
+
+    if (!hasAlertToday) {
+      await notificationRepo.insertNotification(
+        AppNotification(
+          title: 'Security alert',
+          description: 'New login detected on a device.',
+          type: 'security',
+          createdAt: now,
+        ),
+      );
+    }
 
     final user = users.first;
     return UserAccount(
@@ -214,6 +225,14 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> deleteAccount(String email) async {
     final db = await SqfliteDatabaseService.database;
     await logout(); // Clear session first
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('biometric_enabled');
+    
     await db.delete('users', where: 'email = ?', whereArgs: [email]);
+    await db.delete('transactions');
+    await db.delete('goals');
+    await db.delete('challenges');
+    await db.delete('notifications');
   }
 }

@@ -60,102 +60,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        if (state is! AuthAuthenticated) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // When logout completes, AuthUnauthenticated is emitted.
+        // Reset the entire navigation stack so LoginScreen is shown.
+        if (state is AuthUnauthenticated) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
         }
+      },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is! AuthAuthenticated) {
+            // Only show spinner while loading, not on unauthenticated
+            // (the BlocListener above handles the navigation away).
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-        final user = state.user;
-        final colorScheme = Theme.of(context).colorScheme;
+          final user = state.user;
+          final colorScheme = Theme.of(context).colorScheme;
 
-        return Scaffold(
-          backgroundColor: colorScheme.background,
-          body: Stack(
-            children: [
-              CustomScrollView(
-                slivers: [
-                  // Sticky App Bar
-                  SliverAppBar(
-                    pinned: true,
-                    backgroundColor: colorScheme.background.withOpacity(0.8),
-                    elevation: 0,
-                    toolbarHeight: 64,
-                    leading: IconButton(
-                      icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-                      onPressed: () => Navigator.pop(context),
-                      splashRadius: 24,
-                    ),
-                    title: Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: colorScheme.onSurface,
+          return Scaffold(
+            backgroundColor: colorScheme.background,
+            body: Stack(
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    // Sticky App Bar
+                    SliverAppBar(
+                      pinned: true,
+                      backgroundColor: colorScheme.background.withOpacity(0.8),
+                      elevation: 0,
+                      toolbarHeight: 64,
+                      leading: IconButton(
+                        icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+                        onPressed: () => Navigator.pop(context),
+                        splashRadius: 24,
                       ),
-                    ),
-                    flexibleSpace: ClipRRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(color: Colors.transparent),
-                      ),
-                    ),
-                    actions: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 16),
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: colorScheme.primary.withOpacity(0.1),
+                      title: Text(
+                        'Profile',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: colorScheme.onSurface,
                         ),
-                        child: Center(
-                          child: Text(
-                            user.name.isNotEmpty
-                                ? user.name[0].toUpperCase()
-                                : 'U',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
+                      ),
+                      flexibleSpace: ClipRRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(color: Colors.transparent),
+                        ),
+                      ),
+                      actions: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorScheme.primary.withOpacity(0.1),
+                          ),
+                          child: Center(
+                            child: Text(
+                              user.name.isNotEmpty
+                                  ? user.name[0].toUpperCase()
+                                  : 'U',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 24,
                       ),
-                    ],
-                  ),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          // User Identity Section
+                          _buildUserIdentity(context, user),
+                          const SizedBox(height: 40),
 
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 24,
+                          // Bento Grid Settings
+                          _buildBentoGrid(context, user),
+                          const SizedBox(height: 32),
+
+                          // Logout Section
+                          _buildLogoutButton(context),
+                          const SizedBox(height: 100),
+                        ]),
+                      ),
                     ),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        // User Identity Section
-                        _buildUserIdentity(context, user),
-                        const SizedBox(height: 40),
-
-                        // Bento Grid Settings
-                        _buildBentoGrid(context, user),
-                        const SizedBox(height: 32),
-
-                        // Logout Section
-                        _buildLogoutButton(context),
-                        const SizedBox(height: 100),
-                      ]),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

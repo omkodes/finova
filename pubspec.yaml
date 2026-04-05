@@ -50,6 +50,7 @@ dependencies:
   excel: any
   share_plus: any
   local_auth: ^3.0.1
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:

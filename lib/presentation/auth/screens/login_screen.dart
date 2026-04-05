@@ -1,7 +1,7 @@
 import 'dart:ui';
+import 'package:finova/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../widgets/fade_slide_animation.dart';
 import '../bloc/auth_bloc.dart';
 import 'sign_up_screen.dart';
@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -41,7 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          // Use pushAndRemoveUntil so that even if LoginScreen was pushed via
+          // pushReplacement (e.g. after signup), we fully reset the nav stack.
+          // The root MaterialApp BlocBuilder will then show the correct screen.
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -224,38 +228,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 const SizedBox(height: 24),
                                 
                                 // Password Field
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4, bottom: 8),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Password',
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          color: AppColors.onSurfaceVariant,
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {},
-                                        child: const Text(
-                                          'Forgot Password?',
-                                          style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 4, bottom: 8),
+                                  child: Text(
+                                    'Password',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
                                   ),
                                 ),
                                 TextFormField(
                                   controller: _passwordController,
-                                  obscureText: true,
+                                  obscureText: _obscurePassword,
                                   style: const TextStyle(color: AppColors.onSurface),
                                   cursorColor: AppColors.primary,
                                   decoration: InputDecoration(
@@ -264,7 +251,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     filled: true,
                                     fillColor: AppColors.surfaceContainerLow,
                                     prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.outline, size: 20),
-                                    suffixIcon: const Icon(Icons.visibility_rounded, color: AppColors.outline, size: 20),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                        color: AppColors.outline,
+                                        size: 20,
+                                      ),
+                                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    ),
                                     contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
