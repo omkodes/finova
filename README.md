@@ -357,6 +357,8 @@ finova/
 
 **No-spend challenge streak is calculated against all expense history**, not just days since the challenge started, giving users credit for streaks that predate the challenge start.
 
+**This project has been tested on Android devices only.** The app runs correctly on Android and all features have been verified on a physical Android device. Behaviour on iOS or other platforms has not been tested — while Flutter is cross-platform by nature, minor platform-specific differences (particularly around biometric authentication, local notifications, and file sharing) may require additional handling on iOS.
+
 ---
 
 ## Dependencies
