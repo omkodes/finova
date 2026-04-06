@@ -31,59 +31,18 @@ The app was built with the following principles in mind:
 - **Mobile-native design** — interactions, navigation, and layouts are designed for thumbs, not cursors.
 
 ---
-<!--
+
 ## Screenshots
 
-> Screenshots captured on a Pixel 8 emulator running Android 14. Both light and dark themes are shown.
-
-### Onboarding & Authentication
-
-| Login | Sign Up | Onboarding |
-|:---:|:---:|:---:|
-| ![Login Screen](screenshots/login.png) | ![Sign Up Screen](screenshots/signup.png) | ![Onboarding](screenshots/onboarding.png) |
-
-### Home Dashboard
-
-| Dashboard (Light) | Dashboard (Dark) | Spending Chart |
-|:---:|:---:|:---:|
-| ![Dashboard Light](screenshots/dashboard_light.png) | ![Dashboard Dark](screenshots/dashboard_dark.png) | ![Spending Chart](screenshots/spending_chart.png) |
-
-### Transaction Management
-
-| Transaction List | Add Transaction | Transaction Details |
-|:---:|:---:|:---:|
-| ![Transactions](screenshots/transactions.png) | ![Add Transaction](screenshots/add_transaction.png) | ![Transaction Details](screenshots/transaction_details.png) |
-
-### Goals & Challenges
-
-| Goals Screen | No Spend Challenge | Goal Progress |
-|:---:|:---:|:---:|
-| ![Goals](screenshots/goals.png) | ![Challenge](screenshots/challenge.png) | ![Goal Progress](screenshots/goal_progress.png) |
-
-### Insights
-
-| Insights Overview | Spending Heatmap | Smart Tips |
-|:---:|:---:|:---:|
-| ![Insights](screenshots/insights.png) | ![Heatmap](screenshots/heatmap.png) | ![Smart Tips](screenshots/smart_tips.png) |
-
-### Profile & Settings
-
-| Profile | Edit Profile | Biometric Lock |
-|:---:|:---:|:---:|
-| ![Profile](screenshots/profile.png) | ![Edit Profile](screenshots/edit_profile.png) | ![Biometric](screenshots/biometric.png) |
-
-### Notifications
-
-| Notifications | Dark Mode |
-|:---:|:---:|
-| ![Notifications](screenshots/notifications.png) | ![Dark Mode](screenshots/dark_mode.png) |
-
-> **To add your screenshots:** Create a `screenshots/` folder at the root of the repository and save each image with the filename shown above. Recommended size: **390 × 844 px** (iPhone 14 ratio) or use a device frame tool like [Previewed](https://previewed.app) or [Mockup Phone](https://mockuphone.com) to add a polished phone frame around each capture.
+| | | |
+| :-: | :-: | :-: |
+| <img src="https://github.com/user-attachments/assets/508cb06b-d238-40d7-a72b-959fc2a365ef" width="300"> | <img src="https://github.com/user-attachments/assets/2825cca9-3b1e-4caa-bb55-dd83f977f7b2" width="300"> | <img src="https://github.com/user-attachments/assets/10081473-9c41-4365-909f-834e008dd131" width="300"> |
+| <img src="https://github.com/user-attachments/assets/8dee805a-72c4-4c28-b10b-1daab22761ba" width="300"> | <img src="https://github.com/user-attachments/assets/eec0080d-920f-49cf-81f3-b3f31f72767d" width="300"> | <img src="https://github.com/user-attachments/assets/3606e275-d7db-4813-809e-c1a6cc30e0a6" width="300"> |
+| <img src="https://github.com/user-attachments/assets/67cb86dc-0980-4b69-8396-df066803f822" width="300"> | <img src="https://github.com/user-attachments/assets/156f318f-0fb5-426b-8381-b0c4ff28d421" width="300"> | <img src="https://github.com/user-attachments/assets/f0c671a6-9bcb-41ce-a264-8bd20f16f307" width="300"> |
+| <img src="https://github.com/user-attachments/assets/226d832e-0c2d-4c3d-b8c8-7a97f7d468ea" width="300"> | <img src="https://github.com/user-attachments/assets/d7fd34c8-59e8-48c2-9352-10707d56d1e1" width="300"> | <img src="https://github.com/user-attachments/assets/90a8cece-986b-487b-980e-9375bf3df41e" width="300"> |
+| <img src="https://github.com/user-attachments/assets/8a51d5e4-aa9f-4745-ba63-fb8c06d7cdd5" width="300"> | <img src="https://github.com/user-attachments/assets/5d360e95-3125-4dbc-9139-b062f9351332" width="300"> | <img src="https://github.com/user-attachments/assets/d6ed30aa-9d59-44e3-baf8-8d91b842ffa4" width="300"> |
 
 ---
-
--->
-
 ## App Screens & Features
 
 ### 1. Authentication & Onboarding
@@ -356,6 +315,10 @@ finova/
 **Passwords are stored as plain text in SQLite.** This is intentional for the scope of a local-only demo app. In production, bcrypt or Argon2 hashing would replace this.
 
 **No-spend challenge streak is calculated against all expense history**, not just days since the challenge started, giving users credit for streaks that predate the challenge start.
+
+**This project has been tested on Android devices only.** The app runs correctly on Android and all features have been verified on a physical Android device. Behaviour on iOS or other platforms has not been tested — while Flutter is cross-platform by nature, minor platform-specific differences (particularly around biometric authentication, local notifications, and file sharing) may require additional handling on iOS.
+
+**Google Fonts Asset Handling.** While the app is 100% offline-first for data, it utilizes the `google_fonts` package. In specific edge cases (such as a first-time launch or cache clearing), the app **may require a one-time internet connection** to fetch and cache font assets. Beyond this asset initialization, no network dependency exists.
 
 ---
 
